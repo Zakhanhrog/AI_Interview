@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="52bbf6a0-ac15-4c5d-927b-93244f53e7a6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../CaseStudyMod2/CaseStudyMod2.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudyMod2/src/kjkhfjkh.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/README.MD" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/META-INF/MANIFEST.MF" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/MainFrame.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/ChatPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/CreatePostPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/ForgotPasswordPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/HomePanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/LoginPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/MessageListPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/NotificationDisplayPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/ProfilePanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/RegisterPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../CaseStudy_WebSocial/src/com/social_network/ui/panels/SocialPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/EduHub.iconset/add.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/EduHub.iconset/delete.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/EduHub.iconset/edit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/lib/ada.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/lib/jcalendar-*.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/META-INF/MANIFEST.MF" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/add.icns" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/add.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/delete.icns" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/delete.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/edit.icns" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/resources/icons/edit.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../EduManager/src/com/eduzk/view/dialogs/RegisterDialog.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Help_Information/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../Help_Information/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/.idea/Minitest7.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Minitest7/src/src.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Module2_TEST/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Module2_TEST/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Module2_TEST/src/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../caseStudy_Mod2/.idea/caseStudy_Mod2.iml" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3
+}]]></component>
+  <component name="ProjectId" id="2xAuLdx95LmMdzZrGSOnfCk12Dq" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/backend" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-2ee2454479a3-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.25410.122" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="52bbf6a0-ac15-4c5d-927b-93244f53e7a6" name="Changes" comment="" />
+      <created>1747393144955</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747393144955</updated>
+    </task>
+    <servers />
+  </component>
+</project>

@@ -1,0 +1,98 @@
+/* frontend/src/pages/admin/AdminLayout.css */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font chữ đồng nhất */
+}
+
+.admin-nav {
+  width: 260px; /* Tăng chiều rộng một chút */
+  background-color: #343a40; /* Màu tối cho thanh điều hướng */
+  color: #adb5bd; /* Màu chữ nhạt hơn trên nền tối */
+  padding: 25px 20px; /* Tăng padding */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Thêm shadow nhẹ */
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-nav h2 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  font-size: 1.6em;
+  color: #ffffff; /* Màu trắng cho tiêu đề */
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #495057; /* Đường kẻ phân cách */
+}
+
+.admin-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Để ul chiếm không gian còn lại, đẩy nút logout xuống dưới */
+}
+
+.admin-nav li {
+  margin-bottom: 5px; /* Giảm margin một chút */
+}
+
+.admin-nav a, .admin-nav button { /* Áp dụng style chung cho link và button */
+  display: block;
+  padding: 12px 15px; /* Padding đồng nhất */
+  text-decoration: none;
+  color: #ced4da; /* Màu chữ cho link */
+  border-radius: 5px; /* Bo góc */
+  transition: background-color 0.2s ease, color 0.2s ease; /* Hiệu ứng mượt hơn */
+  font-size: 0.95em;
+}
+
+.admin-nav a:hover, .admin-nav button:hover:not(:disabled) {
+  background-color: #495057; /* Màu nền khi hover */
+  color: #ffffff; /* Màu chữ khi hover */
+}
+
+.admin-nav a.active { /* Style cho link đang active (cần logic React Router) */
+    background-color: #007bff;
+    color: white;
+}
+
+.admin-nav hr {
+  border: none;
+  border-top: 1px solid #495057;
+  margin: 20px 0;
+}
+
+.admin-nav button { /* Style riêng cho nút logout */
+    background-color: transparent; /* Nền trong suốt */
+    border: 1px solid #dc3545; /* Viền đỏ */
+    color: #dc3545; /* Chữ đỏ */
+    text-align: center;
+    cursor: pointer;
+}
+.admin-nav button:hover:not(:disabled) {
+    background-color: #dc3545; /* Nền đỏ khi hover */
+    color: white;
+}
+
+
+.admin-content {
+  flex-grow: 1;
+  padding: 30px; /* Tăng padding */
+  background-color: #f8f9fa; /* Màu nền sáng hơn cho nội dung chính */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+}
+
+/* Cải thiện style cho các heading trong admin-content */
+.admin-content h1 {
+    font-size: 1.8em;
+    color: #343a40;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+.admin-content h2 {
+    font-size: 1.5em;
+    color: #495057;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}

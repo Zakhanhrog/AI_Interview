@@ -1,0 +1,83 @@
+/* frontend/src/pages/admin/LoginPageAdmin.css */
+.login-admin-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5; /* Màu nền nhẹ nhàng hơn */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .login-admin-container {
+    background-color: #ffffff;
+    padding: 40px; /* Tăng padding */
+    border-radius: 12px; /* Bo góc nhiều hơn */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Box shadow rõ ràng hơn */
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .login-admin-container h2 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.8em; /* Tăng kích thước chữ */
+  }
+  
+  .login-admin-form .form-group {
+    margin-bottom: 20px; /* Tăng khoảng cách */
+    text-align: left;
+  }
+  
+  .login-admin-form label {
+    display: block;
+    margin-bottom: 8px; /* Khoảng cách với input */
+    font-weight: 600; /* Chữ đậm hơn */
+    color: #555;
+  }
+  
+  .login-admin-form input[type="text"],
+  .login-admin-form input[type="password"] {
+    width: 100%;
+    padding: 12px 15px; /* Padding lớn hơn */
+    border: 1px solid #d9d9d9;
+    border-radius: 6px; /* Bo góc input */
+    box-sizing: border-box; /* Quan trọng để padding không làm vỡ layout */
+    font-size: 1em;
+    transition: border-color 0.3s ease; /* Hiệu ứng khi focus */
+  }
+  
+  .login-admin-form input[type="text"]:focus,
+  .login_admin-form input[type="password"]:focus {
+    border-color: #4a90e2; /* Màu border khi focus */
+    outline: none; /* Bỏ outline mặc định */
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2); /* Thêm shadow nhẹ khi focus */
+  }
+  
+  .login-admin-form .error-message {
+    color: #ff4d4f; /* Màu đỏ cho lỗi */
+    margin-bottom: 15px;
+    font-size: 0.9em;
+  }
+  
+  .login-admin-form button[type="submit"] {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #4a90e2; /* Màu xanh dương chủ đạo */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em; /* Chữ to hơn */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Hiệu ứng khi hover */
+  }
+  
+  .login-admin-form button[type="submit"]:hover:not(:disabled) {
+    background-color: #357abd; /* Màu đậm hơn khi hover */
+  }
+  
+  .login-admin-form button[type="submit"]:disabled {
+    background-color: #a0c3e8; /* Màu nhạt hơn khi disabled */
+    cursor: not-allowed;
+  }
