@@ -18,7 +18,6 @@ import './index.css'; // CSS global
 
 // Chỉ gọi ReactDOM.createRoot().render() MỘT LẦN DUY NHẤT
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
     <AuthAdminProvider> 
       <BrowserRouter>
         <Routes>
@@ -34,5 +33,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </Routes>
       </BrowserRouter>
     </AuthAdminProvider>
-  </React.StrictMode>,
 );

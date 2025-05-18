@@ -2,9 +2,6 @@
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.errors import ConnectionFailure
-# Không cần CodecOptions và UuidRepresentation nếu dùng qua URI
-# from bson.codec_options import CodecOptions
-# from bson.binary import UuidRepresentation
 
 from .config import settings
 
