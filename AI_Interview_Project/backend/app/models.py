@@ -1,8 +1,7 @@
-# backend/app/models.py
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Literal
 from uuid import UUID, uuid4
-from datetime import datetime, timezone
+from datetime import datetime, timezone # Bỏ import date nếu không dùng ở đâu khác
 from bson import ObjectId
 
 class PyObjectId(ObjectId):
@@ -10,7 +9,7 @@ class PyObjectId(ObjectId):
     def __get_validators__(cls):
         yield cls.validate
     @classmethod
-    def validate(cls, v, field):
+    def validate(cls, v, field): # field có thể không cần nếu là Pydantic V2 và không dùng
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
@@ -23,15 +22,13 @@ class Question(BaseModel):
     text: str
     order: int
 
-SpecializedField = Literal["developer", "designer", "none"] # "none" cho giai đoạn đầu hoặc nếu không chọn
+SpecializedField = Literal["developer", "designer", "none"]
 
 class QuestionSetBase(BaseModel):
     name: str
     questions: List[Question] = []
-    # Thêm trường để phân loại bộ câu hỏi
     field_type: SpecializedField = Field(default="none", description="Loại bộ câu hỏi: none (chung), developer, designer")
     is_default_general: bool = Field(default=False, description="Đây có phải bộ câu hỏi chung mặc định không?")
-
 
 class QuestionSetCreate(QuestionSetBase):
     id_name: Optional[str] = None
@@ -39,7 +36,7 @@ class QuestionSetCreate(QuestionSetBase):
 class QuestionSetUpdate(BaseModel):
     name: Optional[str] = None
     questions: Optional[List[Question]] = None
-    field_type: Optional[SpecializedField] = None # Cho phép cập nhật field_type
+    field_type: Optional[SpecializedField] = None
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class QuestionSetInDB(QuestionSetBase):
@@ -47,19 +44,18 @@ class QuestionSetInDB(QuestionSetBase):
     id_name: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    # field_type và is_default_general đã có từ QuestionSetBase
 
     class Config:
         populate_by_name = True
         json_encoders = {ObjectId: str, datetime: lambda dt: dt.isoformat()}
         from_attributes = True
 
-class QuestionSetPublic(BaseModel): # Giữ lại các trường cần thiết cho public
+class QuestionSetPublic(BaseModel):
     id_name: str
     name: str
     questions: List[Question]
     field_type: SpecializedField
-    is_default_general: bool # Thêm is_default_general nếu admin cần xem
+    is_default_general: bool
     created_at: datetime
     updated_at: datetime
 
@@ -72,7 +68,7 @@ class AnswerWithFeedback(BaseModel):
     question_text: str
     candidate_answer: str
     ai_feedback_per_answer: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc)) # Sử dụng timezone-aware
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class OverallAssessment(BaseModel):
     strengths: List[str] = []
@@ -83,29 +79,31 @@ class OverallAssessment(BaseModel):
     suggested_positions: Optional[List[str]] = None
     raw_ai_summary_text: Optional[str] = None
 
+InterviewLifecycleStatus = Literal[
+    "general_in_progress",
+    "awaiting_specialization",
+    "specialized_in_progress",
+    "completed",
+    "abandoned"
+]
+
 class InterviewBase(BaseModel):
-    current_phase: str = Field(default="general")
+    lifecycle_status: InterviewLifecycleStatus = Field(default="general_in_progress")
     selected_field: SpecializedField = Field(default="none")
     desired_position_in_field: Optional[str] = None
-
-    general_question_set_id_name: Optional[str] = None # ID của bộ câu hỏi chung đã dùng
+    general_question_set_id_name: Optional[str] = None
     general_questions_snapshot: List[Question] = []
     general_answers_and_feedback: List[AnswerWithFeedback] = []
-
-    specialized_question_set_id_name: Optional[str] = None # ID của bộ câu hỏi chuyên môn đã dùng
-    specialized_questions_snapshot: Optional[List[Question]] = None # Optional vì có thể chưa đến giai đoạn này
+    specialized_question_set_id_name: Optional[str] = None
+    specialized_questions_snapshot: Optional[List[Question]] = None
     specialized_answers_and_feedback: List[AnswerWithFeedback] = []
-
     overall_assessment: Optional[OverallAssessment] = None
     start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     end_time: Optional[datetime] = None
     is_completed: bool = False
 
-class InterviewCreate(BaseModel):
-    start_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class InterviewInDB(InterviewBase):  # Kế thừa tất cả từ InterviewBase
+class InterviewInDB(InterviewBase):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
 
     class Config:
@@ -113,18 +111,20 @@ class InterviewInDB(InterviewBase):  # Kế thừa tất cả từ InterviewBase
         json_encoders = {ObjectId: str, datetime: lambda dt: dt.isoformat()}
         from_attributes = True
 
-
 class InterviewPublic(BaseModel):
-    id: str  # Sẽ là string của ObjectId
-    current_phase: str
+    id: str
+    lifecycle_status: InterviewLifecycleStatus
     selected_field: SpecializedField
     desired_position_in_field: Optional[str]
     general_question_set_id_name: Optional[str]
     specialized_question_set_id_name: Optional[str]
     overall_assessment: Optional[OverallAssessment]
     start_time: datetime
+    updated_at: datetime
     end_time: Optional[datetime]
     is_completed: bool
+    general_answers_and_feedback: Optional[List[AnswerWithFeedback]] = None
+    specialized_answers_and_feedback: Optional[List[AnswerWithFeedback]] = None
 
     class Config:
         json_encoders = {datetime: lambda dt: dt.isoformat()}
@@ -132,7 +132,7 @@ class InterviewPublic(BaseModel):
 
 class SelectFieldPayload(BaseModel):
     interview_db_id: str
-    field: SpecializedField # 'developer' or 'designer'
+    field: SpecializedField
 
 class InterviewQuestionResponse(BaseModel):
     question_id: UUID
@@ -144,22 +144,15 @@ class AnswerPayload(BaseModel):
     question_id: UUID
     answer_text: str
 
-
 class AIFeedbackResponse(BaseModel):
     interview_db_id: str
     feedback: Optional[str] = None
     next_question: Optional[InterviewQuestionResponse] = None
-    # Thông tin về giai đoạn mới
-    interview_phase: str
-    available_fields_to_choose: Optional[
-    List[SpecializedField]] = None
+    interview_lifecycle_status: InterviewLifecycleStatus
+    available_fields_to_choose: Optional[List[SpecializedField]] = None
     is_final_assessment_ready: bool = False
     final_assessment: Optional[OverallAssessment] = None
 
-# THÊM MODEL TOKEN Ở ĐÂY
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-# Thêm timezone import cho datetime
-from datetime import timezone

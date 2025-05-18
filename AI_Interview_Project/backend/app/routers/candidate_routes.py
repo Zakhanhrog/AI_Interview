@@ -1,4 +1,3 @@
-# backend/app/routers/candidate_routes.py
 from fastapi import APIRouter, HTTPException, Depends, status
 from bson import ObjectId
 from datetime import datetime, timezone
@@ -14,9 +13,9 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from ..models import (
     InterviewQuestionResponse, AnswerPayload, AIFeedbackResponse,
     AnswerWithFeedback, OverallAssessment, Question, QuestionSetInDB,
-    InterviewInDB, SpecializedField, SelectFieldPayload
+    InterviewInDB, SpecializedField, SelectFieldPayload, InterviewLifecycleStatus
 )
-from ..sample_data import (
+from ..sample_data import (  # Hoặc from ..sample_data nếu bạn tách file
     DEFAULT_GENERAL_QSET_ID,
     DEFAULT_DEVELOPER_QSET_ID,
     DEFAULT_DESIGNER_QSET_ID
@@ -47,11 +46,13 @@ async def start_interview_endpoint(db: AsyncIOMotorDatabase = Depends(get_databa
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Default general question set has no questions.")
 
+    current_time = datetime.now(timezone.utc)
     new_interview_entry = InterviewInDB(
-        start_time=datetime.now(timezone.utc),
-        current_phase="general",
+        start_time=current_time,
+        updated_at=current_time,
+        lifecycle_status="general_in_progress",
         general_question_set_id_name=qset_from_db.id_name,
-        general_questions_snapshot=[q.model_dump() for q in general_questions_snapshot]  # Đảm bảo lưu dưới dạng dict
+        general_questions_snapshot=[q.model_dump() for q in general_questions_snapshot]
     )
 
     result = await interview_collection.insert_one(new_interview_entry.model_dump(by_alias=True, exclude_none=True))
@@ -68,7 +69,7 @@ async def start_interview_endpoint(db: AsyncIOMotorDatabase = Depends(get_databa
             question_text=current_question_for_response.text,
             is_last_question=is_last_in_phase
         ),
-        interview_phase="general",
+        interview_lifecycle_status="general_in_progress",
         available_fields_to_choose=None,
         is_final_assessment_ready=False,
         final_assessment=None
@@ -91,11 +92,11 @@ async def select_field_endpoint(payload: SelectFieldPayload, db: AsyncIOMotorDat
 
     current_interview = InterviewInDB(**interview_doc)
 
-    if current_interview.current_phase != "specialization_choice":
+    if current_interview.lifecycle_status != "awaiting_specialization":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Not in the phase to select specialization.")
 
-    if payload.field not in ["developer", "designer"]:  # Validation
+    if payload.field not in ["developer", "designer"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid field selected. Must be 'developer' or 'designer'.")
 
@@ -104,7 +105,7 @@ async def select_field_endpoint(payload: SelectFieldPayload, db: AsyncIOMotorDat
         "designer": DEFAULT_DESIGNER_QSET_ID
     }
     specialized_qset_id_name = specialized_qset_id_name_map.get(payload.field)
-    if not specialized_qset_id_name:  # Should not happen with validation above
+    if not specialized_qset_id_name:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Internal error: Could not map field to question set ID.")
 
@@ -127,11 +128,11 @@ async def select_field_endpoint(payload: SelectFieldPayload, db: AsyncIOMotorDat
 
     update_fields = {
         "selected_field": payload.field,
-        "current_phase": "specialized_questions",
+        "lifecycle_status": "specialized_in_progress",
         "specialized_question_set_id_name": specialized_qset_id_name,
         "specialized_questions_snapshot": [q.model_dump() for q in specialized_questions_snapshot],
-        # Save as list of dicts
-        "specialized_answers_and_feedback": []  # Initialize empty list for new phase
+        "specialized_answers_and_feedback": [],
+        "updated_at": datetime.now(timezone.utc)
     }
     await interview_collection.update_one({"_id": interview_oid}, {"$set": update_fields})
 
@@ -143,7 +144,7 @@ async def select_field_endpoint(payload: SelectFieldPayload, db: AsyncIOMotorDat
             question_text=first_specialized_question.text,
             is_last_question=is_last_specialized
         ),
-        interview_phase="specialized_questions",
+        interview_lifecycle_status="specialized_in_progress",
         available_fields_to_choose=None,
         is_final_assessment_ready=False,
         final_assessment=None
@@ -175,11 +176,11 @@ async def submit_answer_endpoint(payload: AnswerPayload, db: AsyncIOMotorDatabas
     answers_list: List[AnswerWithFeedback]
     answer_update_field_name: str
 
-    if current_interview.current_phase == "general":
+    if current_interview.lifecycle_status == "general_in_progress":
         questions_snapshot = current_interview.general_questions_snapshot
         answers_list = current_interview.general_answers_and_feedback
         answer_update_field_name = "general_answers_and_feedback"
-    elif current_interview.current_phase == "specialized_questions":
+    elif current_interview.lifecycle_status == "specialized_in_progress":
         if not current_interview.specialized_questions_snapshot:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="Specialized questions not loaded for this interview phase.")
@@ -188,7 +189,7 @@ async def submit_answer_endpoint(payload: AnswerPayload, db: AsyncIOMotorDatabas
         answer_update_field_name = "specialized_answers_and_feedback"
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Cannot submit answer in phase: {current_interview.current_phase}")
+                            detail=f"Cannot submit answer in lifecycle_status: {current_interview.lifecycle_status}")
 
     current_question_index_in_list = len(answers_list)
     if current_question_index_in_list >= len(questions_snapshot) or \
@@ -198,10 +199,9 @@ async def submit_answer_endpoint(payload: AnswerPayload, db: AsyncIOMotorDatabas
 
     question_answered = questions_snapshot[current_question_index_in_list]
 
-    # Temporary variable to store desired_position
     desired_position_update = current_interview.desired_position_in_field
-    if current_interview.current_phase == "specialized_questions" and current_question_index_in_list == 0:
-        desired_position_update = payload.answer_text  # Capture from first specialized question answer
+    if current_interview.lifecycle_status == "specialized_in_progress" and current_question_index_in_list == 0:
+        desired_position_update = payload.answer_text
 
     ai_generated_feedback_for_answer = "Phản hồi AI đang được xử lý..."
     if app_globals.gemini_model:
@@ -233,14 +233,16 @@ Nhận xét của bạn:"""
     )
     updated_answers_for_current_phase = answers_list + [new_answer_with_feedback]
 
+    current_time_for_update = datetime.now(timezone.utc)
     update_fields_to_db: Dict[str, Any] = {
-        answer_update_field_name: [ans.model_dump() for ans in updated_answers_for_current_phase]
+        answer_update_field_name: [ans.model_dump() for ans in updated_answers_for_current_phase],
+        "updated_at": current_time_for_update
     }
-    if desired_position_update is not None:  # Only update if it's set or changed
+    if desired_position_update is not None:
         update_fields_to_db["desired_position_in_field"] = desired_position_update
 
     next_question_to_send: Optional[InterviewQuestionResponse] = None
-    response_interview_phase = current_interview.current_phase
+    response_lifecycle_status: InterviewLifecycleStatus = current_interview.lifecycle_status
     available_fields: Optional[List[SpecializedField]] = None
     is_final_assessment_now_ready = False
     final_assessment_payload: Optional[OverallAssessment] = None
@@ -256,32 +258,34 @@ Nhận xét của bạn:"""
             is_last_question=is_it_the_last_question_in_this_phase
         )
     else:
-        if current_interview.current_phase == "general":
-            response_interview_phase = "specialization_choice"
+        if current_interview.lifecycle_status == "general_in_progress":
+            response_lifecycle_status = "awaiting_specialization"
             available_fields = ["developer", "designer"]
-            update_fields_to_db["current_phase"] = "specialization_choice"
-        elif current_interview.current_phase == "specialized_questions":
-            response_interview_phase = "completed"
+            update_fields_to_db["lifecycle_status"] = "awaiting_specialization"
+        elif current_interview.lifecycle_status == "specialized_in_progress":
+            response_lifecycle_status = "completed"
             is_final_assessment_now_ready = True
-            update_fields_to_db["current_phase"] = "completed"
+            update_fields_to_db["lifecycle_status"] = "completed"
             update_fields_to_db["is_completed"] = True
-            update_fields_to_db["end_time"] = datetime.now(timezone.utc)
+            update_fields_to_db["end_time"] = current_time_for_update
 
             full_transcript = "Phần câu hỏi chung:\n"
-            for i, item in enumerate(current_interview.general_answers_and_feedback + (
-            [new_answer_with_feedback] if answer_update_field_name == "general_answers_and_feedback" else [])):
+            answers_for_general_transcript = current_interview.general_answers_and_feedback
+            if answer_update_field_name == "general_answers_and_feedback":
+                answers_for_general_transcript = updated_answers_for_current_phase
+
+            for i, item in enumerate(answers_for_general_transcript):
                 full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n  Nhận xét AI: {item.ai_feedback_per_answer}\n\n"
 
-            # Ensure specialized_answers_and_feedback used for transcript is the latest
-            current_specialized_answers = current_interview.specialized_answers_and_feedback
+            answers_for_specialized_transcript = current_interview.specialized_answers_and_feedback
             if answer_update_field_name == "specialized_answers_and_feedback":
-                current_specialized_answers = updated_answers_for_current_phase
+                answers_for_specialized_transcript = updated_answers_for_current_phase
 
-            if current_specialized_answers:  # Check if list is not empty
+            if answers_for_specialized_transcript:
                 full_transcript += f"Phần câu hỏi chuyên môn ({current_interview.selected_field}):\n"
                 actual_desired_position = desired_position_update if desired_position_update else "Chưa rõ"
                 full_transcript += f"  Vị trí ứng tuyển mong muốn: {actual_desired_position}\n"
-                for i, item in enumerate(current_specialized_answers):
+                for i, item in enumerate(answers_for_specialized_transcript):
                     full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n  Nhận xét AI: {item.ai_feedback_per_answer}\n\n"
 
             if app_globals.gemini_model:
@@ -353,7 +357,7 @@ JSON Output:"""
         interview_db_id=payload.interview_db_id,
         feedback=ai_generated_feedback_for_answer,
         next_question=next_question_to_send,
-        interview_phase=response_interview_phase,
+        interview_lifecycle_status=response_lifecycle_status,
         available_fields_to_choose=available_fields,
         is_final_assessment_ready=is_final_assessment_now_ready,
         final_assessment=final_assessment_payload

@@ -1,0 +1,12 @@
+/* frontend/src/pages/admin/InterviewsPage.css */
+
+
+.interviews-filter-group {
+    max-width: 350px; /* Thu nhỏ bộ lọc một chút */
+    margin-bottom: 25px;
+  }
+  .interviews-filter-group label {
+    font-weight: normal; /* Label của bộ lọc không cần quá đậm */
+    font-size: 0.85rem;
+    color: #5f6368;
+  }

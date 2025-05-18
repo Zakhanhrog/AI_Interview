@@ -4,7 +4,7 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8000'; // Hoặc URL API của bạn
 
 const adminApi = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // Base URL cho các API admin
+  baseURL: 'http://localhost:8000/api/v1', 
 });
 
 // Interceptor để tự động thêm token vào header

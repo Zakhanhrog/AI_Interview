@@ -4,11 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { AuthAdminContext } from '../../contexts/AuthAdminContext';
 import './LoginPageAdmin.css'; // Import file CSS mới
 
-// Import Material Icons (nếu bạn đã cài @mui/icons-material)
-// Hoặc bạn có thể dùng SVG icons hoặc ký tự unicode
-// import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-// import LockOutlineIcon from '@mui/icons-material/LockOutline';
-
 const API_BASE_URL = 'http://localhost:8000';
 
 function LoginPageAdmin() {
@@ -17,10 +12,8 @@ function LoginPageAdmin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  
   const authContext = useContext(AuthAdminContext);
   const { loginAdmin } = authContext || {};
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);

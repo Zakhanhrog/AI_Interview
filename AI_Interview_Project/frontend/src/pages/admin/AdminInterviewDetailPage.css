@@ -1,0 +1,135 @@
+/* frontend/src/pages/admin/AdminInterviewDetailPage.css */
+/* Sử dụng các class từ AdminGlobal.css như .admin-section-card nếu có thể */
+
+/* .admin-interview-detail-page .admin-section-card,  <-- Có thể không cần nếu đã là admin-section-card */
+.interview-summary-card,
+.interview-qna-section,
+.interview-assessment-section {
+  background-color: #fff;
+  padding: 20px 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-bottom: 25px;
+}
+
+.admin-interview-detail-page h3 { /* Style riêng cho H3 trong trang chi tiết */
+  font-size: 1.25rem; /* Nhỏ hơn H2 trong card một chút */
+  color: var(--admin-header-text-color);
+  border-bottom: 1px solid var(--admin-border-color);
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.interview-summary-card p,
+.interview-assessment-section p,
+.interview-assessment-section li {
+  margin-bottom: 10px; /* Tăng khoảng cách một chút */
+  line-height: 1.65; /* Dãn dòng dễ đọc hơn */
+  font-size: 0.9rem;
+  color: #495057; /* Màu chữ nội dung */
+}
+.interview-summary-card p strong,
+.interview-assessment-section p strong,
+.interview-assessment-section div strong {
+  color: #212529; /* Chữ đậm hơn, rõ hơn */
+  min-width: 170px; /* Căn chỉnh label */
+  display: inline-block;
+  font-weight: 500; /* Không quá đậm */
+}
+.interview-assessment-section ul {
+    list-style-position: outside; /* Để dấu bullet nằm ngoài text */
+    padding-left: 20px; 
+    margin-top: 5px;
+}
+.interview-assessment-section li::marker { /* Style cho bullet point */
+    color: var(--admin-nav-link-active-bg);
+}
+
+
+.qna-item {
+  border: 1px solid #e9ecef;
+  padding: 12px 18px; /* Giảm padding */
+  border-radius: 6px;
+  margin-bottom: 12px; /* Giảm margin */
+  background-color: #fdfdfd;
+}
+.qna-item:last-child {
+  margin-bottom: 0;
+}
+
+.qna-question strong, /* Strong này là chữ "Câu hỏi X:" */
+.qna-answer strong,   /* Strong này là chữ "Ứng viên trả lời:" */
+.qna-ai-feedback strong { /* Strong này là chữ "Nhận xét AI:" */
+  color: #007bff; /* Màu xanh cho các prefix */
+  font-weight: 500;
+}
+.qna-question {
+  margin-bottom: 8px;
+  font-weight: normal; /* Bỏ đậm mặc định của p */
+  color: #212529;
+}
+.qna-answer {
+  margin-bottom: 8px;
+  padding-left: 0; /* Bỏ thụt lề ở đây, dựa vào margin/padding của p bên trong */
+  color: #343a40;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+}
+.qna-ai-feedback {
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-style: normal; /* Bỏ italic nếu không muốn */
+  color: var(--admin-success-text); /* Dùng màu text của success message */
+  background-color: var(--admin-success-bg); /* Dùng màu nền của success message */
+  border: 1px solid var(--admin-success-border); /* Dùng màu border của success message */
+}
+.qna-ai-feedback strong {
+    color: var(--admin-success-text); /* Cho prefix "Nhận xét AI:" cùng màu */
+}
+
+/* Details/Summary for Raw AI Output */
+.interview-assessment-section details {
+  margin-top: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid var(--admin-border-color);
+  border-radius: 5px;
+}
+.interview-assessment-section summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--admin-nav-link-active-bg); /* Màu giống link */
+  padding: 10px 12px;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+.interview-assessment-section summary:hover {
+  background-color: #e9ecef;
+}
+.interview-assessment-section summary::before {
+    content: '▶'; /* Mũi tên mặc định */
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 0.8em;
+    transition: transform 0.2s ease-in-out;
+}
+.interview-assessment-section details[open] summary::before {
+    transform: rotate(90deg);
+}
+.interview-assessment-section pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #eef2f7;
+  padding: 12px 15px;
+  border-radius: 0 0 5px 5px; /* Chỉ bo góc dưới */
+  border-top: 1px solid var(--admin-border-color);
+  max-height: 350px;
+  overflow-y: auto;
+  font-size: 0.85em;
+  color: #343a40;
+  line-height: 1.5;
+  margin-top: 0; /* Xóa margin-top nếu summary có padding */
+}

@@ -1,11 +1,10 @@
-// frontend/src/App.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
-const defaultLang = 'vi'; // 'vi' or 'en'
+const defaultLang = 'vi';
 const translations = {
   vi: {
     chatTitle: "Phỏng Vấn Viên AI",
@@ -40,7 +39,8 @@ const translations = {
     errorLoadingSpecializedQuestion: "Lỗi tải câu hỏi chuyên môn. Vui lòng thử lại.",
     errorSelectingField: "Lỗi khi chọn lĩnh vực.",
     suitabilityForFieldLabel: "Mức độ phù hợp lĩnh vực:",
-    suggestedPositionsLabel: "Vị trí gợi ý:"
+    suggestedPositionsLabel: "Vị trí gợi ý:",
+    iChooseField: (fieldName) => `Tôi chọn lĩnh vực: ${fieldName}.`
   },
   en: {
     chatTitle: "AI Interviewer",
@@ -75,20 +75,20 @@ const translations = {
     errorLoadingSpecializedQuestion: "Error loading specialized question. Please try again.",
     errorSelectingField: "Error selecting field.",
     suitabilityForFieldLabel: "Suitability for Field:",
-    suggestedPositionsLabel: "Suggested Positions:"
+    suggestedPositionsLabel: "Suggested Positions:",
+    iChooseField: (fieldName) => `I choose the field: ${fieldName}.`
   }
 };
 
 const t = (key, lang = defaultLang, params = null) => {
   const textSource = translations[lang] || translations['en'];
-  const text = textSource?.[key] || key;
-  if (typeof text === 'function' && params !== null) {
-    if (Array.isArray(params)) return text(...params);
-    return text(params);
+  const textForKey = textSource?.[key] || key;
+  if (typeof textForKey === 'function' && params !== null) {
+    if (Array.isArray(params)) return textForKey(...params);
+    return textForKey(params);
   }
-  return text;
+  return textForKey;
 };
-
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -100,7 +100,7 @@ function App() {
   const [interviewId, setInterviewId] = useState(null);
   const [finalAssessment, setFinalAssessment] = useState(null);
   const [currentLang, setCurrentLang] = useState(defaultLang);
-  const [interviewPhase, setInterviewPhase] = useState('general');
+  const [interviewLifecycleStatus, setInterviewLifecycleStatus] = useState('general_in_progress');
   const [fieldsToChoose, setFieldsToChoose] = useState([]);
 
   const messagesEndRef = useRef(null);
@@ -114,12 +114,13 @@ function App() {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
-      const maxHeight = parseInt(getComputedStyle(textareaRef.current).maxHeight, 10) || Infinity;
+      const maxHeightStyle = getComputedStyle(textareaRef.current).maxHeight;
+      const maxHeight = maxHeightStyle && maxHeightStyle !== 'none' ? parseInt(maxHeightStyle, 10) : Infinity;
       textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
     }
   };
 
-  useEffect(scrollToBottom, [messages, finalAssessment, interviewPhase]);
+  useEffect(scrollToBottom, [messages, finalAssessment, interviewLifecycleStatus]);
   useEffect(adjustTextareaHeight, [userInput]);
 
   const addMessageWithAnimation = (newMessageContent) => {
@@ -136,17 +137,17 @@ function App() {
         next_question, 
         is_final_assessment_ready, 
         final_assessment: apiFinalAssessment,
-        interview_phase: newPhase,
+        interview_lifecycle_status: newStatus,
         available_fields_to_choose
     } = data;
 
-    setInterviewPhase(newPhase || interviewPhase); // Fallback to current if undefined
+    setInterviewLifecycleStatus(newStatus || interviewLifecycleStatus);
 
     if (feedback) {
         addMessageWithAnimation({ type: 'feedback', text: feedback });
     }
 
-    if (newPhase === "specialization_choice" && available_fields_to_choose) {
+    if (newStatus === "awaiting_specialization" && available_fields_to_choose) {
         setFieldsToChoose(available_fields_to_choose);
         setCurrentQuestion(null);
     } else if (is_final_assessment_ready) {
@@ -165,15 +166,14 @@ function App() {
             is_last_question: next_question.is_last_question
         });
         addMessageWithAnimation({ type: 'question', text: next_question.question_text });
-        setFieldsToChoose([]); // Clear choices if moving to a question
-    } else if (newPhase === "completed" && !is_final_assessment_ready) {
+        setFieldsToChoose([]);
+    } else if (newStatus === "completed" && !is_final_assessment_ready) {
         addMessageWithAnimation({ type: 'info', text: `${t('allQuestionsCompleted', currentLang)} ${t('waitingForFinalAssessment', currentLang)}` });
         setIsInterviewFinished(true);
         setCurrentQuestion(null);
-    } else if (!next_question && newPhase !== "specialization_choice" && newPhase !== "completed") {
-         // It means the current phase is done but no clear next step from API (e.g. error, or general phase ended without triggering choice)
+    } else if (!next_question && newStatus !== "awaiting_specialization" && newStatus !== "completed") {
         addMessageWithAnimation({ type: 'info', text: t('allQuestionsCompleted', currentLang) });
-        setIsInterviewFinished(true); // Tentatively finish
+        setIsInterviewFinished(true);
         setCurrentQuestion(null);
     }
   };
@@ -187,7 +187,7 @@ function App() {
     setInterviewId(null);
     setFinalAssessment(null);
     setUserInput('');
-    setInterviewPhase('general');
+    setInterviewLifecycleStatus('general_in_progress');
     setFieldsToChoose([]);
 
     try {
@@ -204,7 +204,6 @@ function App() {
 
   useEffect(() => {
     startNewInterview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmitAnswer = async () => {
@@ -230,7 +229,6 @@ function App() {
         errorMsg = t('submitAnswerErrorDetail', currentLang, error.response.data.detail);
       }
       addMessageWithAnimation({ type: 'error', text: errorMsg });
-      // Potentially set phase to an error state or allow retry?
     }
     setIsLoading(false);
   };
@@ -238,10 +236,8 @@ function App() {
   const handleSelectField = async (field) => {
     if (!interviewId || isLoading) return;
     setIsLoading(true);
-    // Visual feedback for user's choice
     const fieldText = field === 'developer' ? t('developerField', currentLang) : t('designerField', currentLang);
-    addMessageWithAnimation({ type: 'answer', text: `${t('iChooseField', currentLang, fieldText)}.` });
-    // Add 'iChooseField': (fieldName) => `Tôi chọn lĩnh vực: ${fieldName}` to translations
+    addMessageWithAnimation({ type: 'answer', text: t('iChooseField', currentLang, fieldText) });
 
     try {
         const payload = {
@@ -260,25 +256,20 @@ function App() {
     }
     setIsLoading(false);
   };
-
-
-  if (isInitialLoading && messages.length === 0 && !interviewId) {
-    return (
-      <div className="loading-initial">
-        <span>{t('initializingInterview', currentLang)}</span>
-      </div>
-    );
-  }
+  
+  if (isInitialLoading && messages.length === 0 ) {
+     return (
+       <div className="loading-initial">
+         <span>{t('initializingInterview', currentLang)}</span>
+       </div>
+     );
+ }
 
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h2>{t('chatTitle', currentLang)}</h2>
-        {/* <select onChange={(e) => setCurrentLang(e.target.value)} value={currentLang} style={{marginLeft: 'auto', marginRight: '10px'}}>
-          <option value="vi">VIE</option>
-          <option value="en">ENG</option>
-        </select> */}
-        {(isInterviewFinished || (interviewPhase === 'completed')) && (
+        {(isInterviewFinished || (interviewLifecycleStatus === 'completed')) && (
           <button onClick={startNewInterview} disabled={isInitialLoading || isLoading}>
             {t('startNewInterviewButton', currentLang)}
           </button>
@@ -335,7 +326,7 @@ function App() {
         <div ref={messagesEndRef} />
       </div>
       
-      {interviewPhase === 'specialization_choice' && !isInterviewFinished && fieldsToChoose.length > 0 && (
+      {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (
           <div className="specialization-choice-area input-area">
             <p style={{textAlign: 'center', margin: '5px 0 10px', color: 'var(--text-primary-color)', width: '100%'}}>{t('chooseYourFieldPrompt', currentLang)}</p> 
             {fieldsToChoose.map(field => (
@@ -351,7 +342,7 @@ function App() {
           </div>
       )}
 
-      {(interviewPhase === 'general' || interviewPhase === 'specialized_questions') && !isInterviewFinished && currentQuestion && (
+      {(interviewLifecycleStatus === 'general_in_progress' || interviewLifecycleStatus === 'specialized_in_progress') && !isInterviewFinished && currentQuestion && (
         <div className="input-area">
           <textarea
             ref={textareaRef}

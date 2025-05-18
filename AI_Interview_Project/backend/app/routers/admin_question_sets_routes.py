@@ -4,17 +4,16 @@ from typing import List
 from uuid import uuid4, UUID
 from datetime import datetime, timezone
 from bson import ObjectId
-
 from ..db import get_database
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from ..models import (
     QuestionSetCreate, QuestionSetPublic, QuestionSetUpdate,
-    QuestionSetInDB, Question  # Question cũng cần ở đây
+    QuestionSetInDB, Question
 )
 from ..security import get_current_admin_user
 
 router = APIRouter(
-    prefix="/admin/question-sets",  # Prefix cục bộ cho router này
+    prefix="/admin/question-sets",
     tags=["Admin - Question Sets"],
     dependencies=[Depends(get_current_admin_user)]
 )
@@ -194,12 +193,11 @@ async def set_as_default_general_question_set(id_name: str, db: AsyncIOMotorData
                             detail="Only question sets with field_type 'none' can be set as default general.")
 
     if current_qset_model.is_default_general:
-        # Đã là mặc định rồi, không cần làm gì, trả về luôn
         return QuestionSetPublic(**current_qset_model.model_dump())
 
     # Bỏ cờ default của các bộ "none" khác
     await question_set_collection.update_many(
-        {"is_default_general": True, "field_type": "none"},  # Chỉ ảnh hưởng các bộ general khác
+        {"is_default_general": True, "field_type": "none"},
         {"$set": {"is_default_general": False, "updated_at": datetime.now(timezone.utc)}}
     )
 

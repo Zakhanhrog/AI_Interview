@@ -1,13 +1,16 @@
 // frontend/src/pages/admin/AdminLayout.jsx
-import React, { useContext, useState } from 'react'; // Thêm useState
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'; 
+import React, { useContext, useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'; 
 import { AuthAdminContext } from '../../contexts/AuthAdminContext';
-import './AdminLayout.css'; // CSS đã cập nhật
+
+import './AdminGlobal.css'; // Import global styles
+import './AdminLayout.css';         // Import layout specific styles
 
 function AdminLayout() {
     const navigate = useNavigate();
+    const location = useLocation();
     const authContext = useContext(AuthAdminContext);
-    // const [isNavOpen, setIsNavOpen] = useState(false); // Cho responsive mobile drawer
+    const [isNavOpen, setIsNavOpen] = useState(false);
 
     const handleLogout = () => {
       if (authContext) {
@@ -18,18 +21,24 @@ function AdminLayout() {
       navigate('/admin/login');
     };
 
-    // const toggleNav = () => setIsNavOpen(!isNavOpen);
+    const toggleNav = () => setIsNavOpen(!isNavOpen);
+
+    // Đóng nav khi chuyển trang trên mobile
+    useEffect(() => {
+        if (isNavOpen) {
+            setIsNavOpen(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
 
   return (
     <div className="admin-layout">
-      {/* <button className="admin-menu-toggle" onClick={toggleNav}>
-          <span className="material-icons">menu</span>
-      </button> */}
-      {/* <nav className={`admin-nav ${isNavOpen ? 'open' : ''}`}> */}
-      <nav className="admin-nav">
+      <button className="admin-menu-toggle" onClick={toggleNav} aria-label="Toggle navigation" aria-expanded={isNavOpen}>
+          <span className="material-icons">{isNavOpen ? 'close' : 'menu'}</span>
+      </button>
+      <nav className={`admin-nav ${isNavOpen ? 'open' : ''}`}>
         <div className="admin-nav-header">
           <h2>Trang Quản Trị</h2>
-          {/* <p className="app-version">v1.0.0</p>  */}
         </div>
         <ul>
           <li>
@@ -44,35 +53,25 @@ function AdminLayout() {
                 <span className="link-text">Xem Phỏng Vấn</span>
             </NavLink>
           </li>
-          {/* Thêm các link khác nếu cần, ví dụ:
-          <li>
-            <NavLink to="/admin/settings">
-                <span className="material-icons">settings</span>
-                <span className="link-text">Cài đặt</span>
-            </NavLink>
-          </li>
-          */}
         </ul>
         <div className="admin-nav-footer">
-            {/* Ví dụ link về trang chủ (trang ứng viên) */}
-            <NavLink to="/" className="nav-link-button" style={{ borderLeft: '3px solid transparent', display: 'flex', alignItems: 'center', marginBottom: '15px'}}>
+            <NavLink to="/" className="nav-link-button" style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', borderLeftColor: 'transparent'}}>
                  <span className="material-icons">home</span>
                  <span className="link-text">Về trang phỏng vấn</span>
             </NavLink>
-            <button onClick={handleLogout} className="logout-button">
+            <button onClick={handleLogout} className="admin-button admin-button-danger logout-button">
                 <span className="material-icons">logout</span>
                 <span className="link-text">Đăng xuất</span>
             </button>
         </div>
       </nav>
       
-      <div className="admin-content-wrapper"> {/* Thêm một div bọc ngoài content */}
-        <main className="admin-content-container"> {/* Container bên trong có padding */}
-            <Outlet /> {/* Đây là nơi các component con sẽ được render */}
+      <div className="admin-content-wrapper">
+        <main className="admin-content-container">
+            <Outlet /> 
         </main>
       </div>
     </div>
   );
 }
-
 export default AdminLayout;
