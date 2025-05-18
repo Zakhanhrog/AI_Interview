@@ -1,98 +1,381 @@
 /* frontend/src/pages/admin/AdminLayout.css */
+
+:root {
+  /* Có thể định nghĩa các biến màu riêng cho admin hoặc dùng chung nếu phù hợp */
+  --admin-bg-main: #f4f6f8; /* Màu nền chính cho khu vực nội dung admin */
+  --admin-nav-bg: #2c3e50;   /* Màu nền tối cho thanh điều hướng */
+  --admin-nav-text-color: #bdc3c7; /* Màu chữ cho link trong nav */
+  --admin-nav-text-hover-color: #ffffff;
+  --admin-nav-link-hover-bg: #34495e;
+  --admin-nav-link-active-bg: #1abc9c; /* Màu xanh lá cho link active */
+  --admin-nav-link-active-text: #ffffff;
+  --admin-header-text-color: #2c3e50; /* Màu cho tiêu đề H1, H2 trong content */
+  --admin-border-color: #e0e0e0;
+}
+
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font chữ đồng nhất */
+  font-family: 'Poppins', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--admin-bg-main); /* Áp dụng màu nền cho toàn layout admin */
 }
 
 .admin-nav {
-  width: 260px; /* Tăng chiều rộng một chút */
-  background-color: #343a40; /* Màu tối cho thanh điều hướng */
-  color: #adb5bd; /* Màu chữ nhạt hơn trên nền tối */
-  padding: 25px 20px; /* Tăng padding */
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Thêm shadow nhẹ */
+  width: 250px; /* Độ rộng thanh điều hướng */
+  background-color: var(--admin-nav-bg);
+  color: var(--admin-nav-text-color);
+  padding: 20px 0; /* Padding trên dưới, không cần padding trái phải nhiều nếu link chiếm full */
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0; /* Quan trọng: Không cho nav co lại */
+  position: fixed; /* CỐ ĐỊNH THANH NAV */
+  left: 0;
+  top: 0;
+  bottom: 0; /* Hoặc height: 100vh; */
+  z-index: 1000; /* Đảm bảo nav nổi lên trên */
+  overflow-y: auto; 
 }
 
-.admin-nav h2 {
-  margin-top: 0;
-  margin-bottom: 30px;
-  font-size: 1.6em;
-  color: #ffffff; /* Màu trắng cho tiêu đề */
+.admin-nav-header {
+  padding: 0 20px 20px 20px; /* Padding cho header của nav */
   text-align: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #495057; /* Đường kẻ phân cách */
+  border-bottom: 1px solid var(--admin-nav-link-hover-bg); /* Đường kẻ mờ */
 }
+
+.admin-nav-header h2 {
+  margin: 0;
+  font-size: 1.5em; /* Kích thước tiêu đề "Trang Quản Trị" */
+  color: #ffffff; /* Màu trắng cho tiêu đề */
+  font-weight: 500;
+}
+.admin-nav-header .app-version { /* Thêm class cho version nếu muốn */
+  font-size: 0.8em;
+  color: var(--admin-nav-text-color);
+  margin-top: 4px;
+}
+
 
 .admin-nav ul {
   list-style: none;
   padding: 0;
-  margin: 0;
-  flex-grow: 1; /* Để ul chiếm không gian còn lại, đẩy nút logout xuống dưới */
+  margin: 15px 0; /* Khoảng cách trên dưới cho list menu */
+  flex-grow: 1;
 }
 
 .admin-nav li {
-  margin-bottom: 5px; /* Giảm margin một chút */
+  margin-bottom: 0; /* Không cần margin nếu link chiếm full */
 }
 
-.admin-nav a, .admin-nav button { /* Áp dụng style chung cho link và button */
-  display: block;
-  padding: 12px 15px; /* Padding đồng nhất */
+/* NavLink sẽ có class "active" tự động từ React Router */
+.admin-nav a, 
+.admin-nav .nav-link-button { /* Dùng class chung cho các button có style giống link */
+  display: flex; /* Cho phép icon và text */
+  align-items: center;
+  padding: 14px 20px;
   text-decoration: none;
-  color: #ced4da; /* Màu chữ cho link */
-  border-radius: 5px; /* Bo góc */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Hiệu ứng mượt hơn */
+  color: var(--admin-nav-text-color);
   font-size: 0.95em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-left: 3px solid transparent; /* Viền trái cho active state */
+}
+/* Sử dụng NavLink từ react-router-dom để có class 'active' */
+.admin-nav a:hover:not(.active),
+.admin-nav .nav-link-button:hover:not(:disabled) {
+  background-color: var(--admin-nav-link-hover-bg);
+  color: var(--admin-nav-text-hover-color);
 }
 
-.admin-nav a:hover, .admin-nav button:hover:not(:disabled) {
-  background-color: #495057; /* Màu nền khi hover */
-  color: #ffffff; /* Màu chữ khi hover */
+.admin-nav a.active {
+  background-color: var(--admin-nav-link-active-bg);
+  color: var(--admin-nav-link-active-text);
+  font-weight: 500;
+  border-left-color: #ffffff; /* Hoặc màu sáng khác */
 }
-
-.admin-nav a.active { /* Style cho link đang active (cần logic React Router) */
-    background-color: #007bff;
-    color: white;
-}
-
-.admin-nav hr {
-  border: none;
-  border-top: 1px solid #495057;
-  margin: 20px 0;
-}
-
-.admin-nav button { /* Style riêng cho nút logout */
-    background-color: transparent; /* Nền trong suốt */
-    border: 1px solid #dc3545; /* Viền đỏ */
-    color: #dc3545; /* Chữ đỏ */
-    text-align: center;
-    cursor: pointer;
-}
-.admin-nav button:hover:not(:disabled) {
-    background-color: #dc3545; /* Nền đỏ khi hover */
-    color: white;
+/* Icon trong NavLink (nếu có) */
+.admin-nav a .material-icons,
+.admin-nav .nav-link-button .material-icons {
+  margin-right: 12px;
+  font-size: 1.2em;
 }
 
 
-.admin-content {
+.admin-nav-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--admin-nav-link-hover-bg);
+}
+/* Nút Đăng xuất */
+.admin-nav .logout-button {
+  width: 100%;
+  padding: 12px 20px;
+  background-color: transparent;
+  border: 1px solid #e74c3c; /* Màu đỏ cho logout */
+  color: #e74c3c;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.admin-nav .logout-button:hover:not(:disabled) {
+  background-color: #e74c3c;
+  color: white;
+}
+.admin-nav .logout-button .material-icons {
+  margin-right: 8px;
+  vertical-align: middle; /* Căn icon với text */
+}
+
+
+/* ----- Khu vực Nội dung chính ----- */
+.admin-content-wrapper {
   flex-grow: 1;
-  padding: 30px; /* Tăng padding */
-  background-color: #f8f9fa; /* Màu nền sáng hơn cho nội dung chính */
-  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+  margin-left: 250px; /* Phải bằng width của admin-nav */
+  height: 100vh;     /* Chiếm toàn bộ chiều cao viewport */
+  overflow-y: auto;  /* Đây là key để scroll */
+  position: relative; /* Cần thiết để context stacking hoạt động đúng nếu có dropdown, modal,... */
+
 }
 
-/* Cải thiện style cho các heading trong admin-content */
-.admin-content h1 {
-    font-size: 1.8em;
-    color: #343a40;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
+.admin-content-container {
+  padding: 25px 30px; 
+  background-color: var(--admin-bg-main); 
+  min-height: 100%; /* Để nó giãn ra ít nhất bằng chiều cao wrapper nếu nội dung ngắn */
+  box-sizing: border-box; /* Quan trọng nếu có border/padding mà không muốn ảnh hưởng kích thước tổng */
 }
-.admin-content h2 {
-    font-size: 1.5em;
-    color: #495057;
-    margin-top: 30px;
-    margin-bottom: 15px;
+
+
+.admin-content-container h1 {
+  font-size: 1.8em;
+  color: var(--admin-header-text-color);
+  margin-top: 0; /* Bỏ margin-top nếu là tiêu đề đầu tiên của trang */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--admin-border-color);
+  font-weight: 600;
+}
+.admin-content-container h2 {
+  font-size: 1.5em;
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+/* Style cho các bảng, form trong admin có thể thêm ở đây */
+/* Ví dụ table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  overflow: hidden; /* Để border-radius áp dụng cho a/thead/tbody */
+}
+.admin-table th, .admin-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border-color);
+}
+.admin-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.admin-table tbody tr:hover {
+  background-color: #f5f7f9;
+}
+
+/* Ví dụ form control */
+.admin-form-group {
+  margin-bottom: 20px;
+}
+.admin-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #444;
+}
+.admin-form-group input[type="text"],
+.admin-form-group input[type="password"],
+.admin-form-group textarea,
+.admin-form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border-color);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.admin-form-group input[type="text"]:focus,
+.admin-form-group input[type="password"]:focus,
+.admin-form-group textarea:focus,
+.admin-form-group select:focus {
+  border-color: var(--admin-nav-link-active-bg); /* Màu nhấn khi focus */
+  box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.15); /* Dùng màu của --admin-nav-link-active-bg */
+  outline: none;
+}
+.admin-form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.admin-button {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background-color: var(--admin-nav-link-active-bg);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.admin-button:hover:not(:disabled) {
+  filter: brightness(110%);
+}
+.admin-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.admin-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+/* Responsive cho Admin Layout (cơ bản) */
+@media (max-width: 992px) { /* Ví dụ khi màn hình nhỏ hơn tablet ngang */
+  .admin-nav {
+    width: 70px; /* Thu nhỏ nav lại, chỉ hiển thị icon */
+  }
+  .admin-nav-header h2, 
+  .admin-nav-header .app-version,
+  .admin-nav a .link-text, /* Tạo class link-text bao quanh text của link */
+  .admin-nav .nav-link-button .link-text {
+    display: none; /* Ẩn chữ, chỉ giữ icon */
+  }
+  .admin-nav a,
+  .admin-nav .nav-link-button {
+    justify-content: center; /* Căn giữa icon */
+    padding: 15px 0;
+  }
+  .admin-nav a .material-icons,
+  .admin-nav .nav-link-button .material-icons {
+    margin-right: 0;
+    font-size: 1.5em; /* Icon to hơn khi nav thu nhỏ */
+  }
+  .admin-nav .logout-button .link-text {
+    display: none; /* Ẩn chữ logout */
+  }
+  .admin-nav .logout-button .material-icons {
+    margin-right: 0;
+  }
+
+
+  .admin-content-wrapper {
+    margin-left: 70px; /* Điều chỉnh margin cho khớp nav mới */
+  }
+  .admin-content-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) { /* Mobile - có thể làm nav ẩn/hiện dạng drawer */
+  .admin-nav {
+    /* Tạm thời ẩn hoàn toàn nav trên mobile nhỏ, hoặc dùng drawer */
+    /* Hoặc làm cho nó toggle được */
+    transform: translateX(-100%); /* Ẩn ban đầu */
+    transition: transform 0.3s ease-in-out;
+    /* Thêm class 'open' để hiện ra */
+  }
+  .admin-nav.open {
+    transform: translateX(0);
+  }
+
+  .admin-content-wrapper {
+    margin-left: 0; /* Không còn margin vì nav ẩn */
+  }
+  /* Cần thêm nút để toggle nav */
+  .admin-menu-toggle { /* Ví dụ một nút toggle */
+    display: block; /* Hiện nút này trên mobile */
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001; /* Cao hơn nav */
+    /* Style nút toggle */
+  }
+}
+.admin-menu-toggle { display: none; } /* Ẩn trên desktop */
+
+/* AdminLayout.css hoặc file CSS riêng cho admin */
+
+/* Style cho các nút nhỏ trong bảng */
+.admin-button-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+.admin-button-danger {
+  background-color: #e74c3c; /* Màu đỏ cho nút xóa */
+  border-color: #e74c3c;
+}
+.admin-button-danger:hover:not(:disabled) {
+  background-color: #c0392b; /* Đỏ đậm hơn khi hover */
+  border-color: #c0392b;
+}
+.admin-button-secondary {
+  background-color: #7f8c8d; /* Màu xám cho nút hủy/phụ */
+  border-color: #7f8c8d;
+}
+.admin-button-secondary:hover:not(:disabled) {
+  background-color: #606d74;
+}
+.admin-button-outline {
+  background-color: transparent;
+  border: 1px solid var(--admin-nav-link-active-bg);
+  color: var(--admin-nav-link-active-bg);
+}
+.admin-button-outline:hover:not(:disabled) {
+  background-color: var(--admin-nav-link-active-bg);
+  color: white;
+}
+
+/* Style cho Modal (ví dụ đơn giản) */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; /* Cao hơn nav */
+  padding: 20px;
+}
+
+.admin-modal-content {
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 600px; /* Giới hạn chiều rộng modal */
+  max-height: 90vh; /* Giới hạn chiều cao */
+  overflow-y: auto; /* Scroll nếu nội dung modal dài */
+}
+
+.admin-modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: var(--admin-header-text-color);
 }

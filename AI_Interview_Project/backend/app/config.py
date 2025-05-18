@@ -27,5 +27,4 @@ def get_settings():
     print(f"Loading settings. Current working directory: {os.getcwd()}")
     return Settings()
 
-
 settings = get_settings()

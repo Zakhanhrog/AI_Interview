@@ -583,32 +583,65 @@ body {
 }
 
 .field-choice-button {
-  padding: 12px 25px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--button-send-text); /* Hoặc màu khác */
-  background-image: var(--button-send-bg); /* Tái sử dụng gradient nút gửi hoặc tạo mới */
-  border: none;
-  border-radius: var(--border-radius-md);
+  /* Style cơ bản cho nút hình chữ nhật bo góc */
+  background-color: var(--input-focus-border-color); /* Màu nền chính, ví dụ màu tím đã định */
+  color: var(--button-send-text); /* Màu chữ, thường là trắng */
+  
+  padding: 14px 28px; /* Padding bên trong nút, điều chỉnh cho cân đối */
+  font-size: 1rem;    /* Kích thước chữ */
+  font-weight: 500;   /* Độ đậm của chữ */
+  
+  border: none;       /* Bỏ viền mặc định (nếu có) */
+  /* ĐÂY LÀ THAY ĐỔI QUAN TRỌNG: Đặt border-radius thành giá trị nhỏ hơn */
+  border-radius: var(--border-radius-md); /* Ví dụ: 12px hoặc 8px, 10px tùy bạn thích */
+  /* Hoặc một giá trị cụ thể: border-radius: 10px; */
+  
   cursor: pointer;
-  transition: background-position 0.3s ease, transform 0.15s ease-out, box-shadow 0.2s ease-out;
-  box-shadow: var(--button-send-shadow);
-  min-width: 200px; /* Đảm bảo nút có độ rộng nhất định */
-  text-align: center;
+  text-align: center; /* Căn giữa chữ */
+  
+  /* Hiệu ứng chuyển tiếp */
+  transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+  
+  /* Bóng đổ nhẹ */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
+  min-width: 160px; /* Chiều rộng tối thiểu của nút */
+  
+  /* Nếu bạn muốn dùng icon cùng với text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Khoảng cách giữa icon (nếu có) và text */
 }
 
+/* Hiệu ứng khi rê chuột qua */
 .field-choice-button:hover:not(:disabled) {
-  background-position: right center; /* Hiệu ứng hover cho gradient */
-  box-shadow: 0 6px 18px rgba(17, 153, 142, 0.3); /* Tùy chỉnh shadow */
+  /* background-color: var(--header-bg); /* Ví dụ: đổi màu khi hover */
+  /* Hoặc làm màu hiện tại sáng/tối hơn một chút */
+  filter: brightness(115%); /* Làm màu sáng hơn 15% */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px); /* Nâng nút lên một chút */
 }
 
+/* Hiệu ứng khi nhấn nút */
 .field-choice-button:active:not(:disabled) {
-  transform: scale(0.96);
+  filter: brightness(90%); /* Làm màu tối hơn khi nhấn */
+  transform: translateY(0px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
+/* Style khi nút bị vô hiệu hóa */
 .field-choice-button:disabled {
-  background-image: none;
-  background-color: #ced4da;
+  background-color: #e0e0e0;
+  color: #a0a0a0;
   cursor: not-allowed;
   opacity: 0.7;
+  box-shadow: none;
+  transform: none; /* Reset transform */
+}
+
+/* (Tùy chọn) Style cho icon nếu bạn thêm vào JSX */
+.field-choice-button .material-icons {
+  font-size: 1.2em; 
+  /* margin-right: 8px;  -> Đã dùng gap nên không cần nữa nếu icon là child trực tiếp */
 }
