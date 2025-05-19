@@ -1,3 +1,4 @@
+# backend/app/routers/admin_interviews_routes.py
 from fastapi import APIRouter, HTTPException, Depends, Query, status
 from typing import List, Optional, Dict, Any
 from bson import ObjectId
@@ -33,12 +34,9 @@ async def get_all_interviews(
         if lifecycle_status_filter:
             query["lifecycle_status"] = lifecycle_status_filter
         else:
-            # Mặc định chỉ lấy các buổi đã hoàn thành nếu không có filter nào được chỉ định và không show_all
             query["lifecycle_status"] = "completed"
-            # Hoặc query["is_completed"] = True, tùy thuộc bạn muốn dùng trường nào làm chính
 
     if overall_assessment_status_filter:
-        # Filter này sẽ chỉ có ý nghĩa nếu lifecycle_status là 'completed' hoặc show_all=True
         query["overall_assessment.status"] = overall_assessment_status_filter
 
     interviews_cursor = interview_collection.find(query).sort("updated_at", -1).skip(skip).limit(limit)
@@ -47,17 +45,14 @@ async def get_all_interviews(
         interview_doc_id_str = str(interview_doc["_id"])
         try:
             validated_interview = InterviewInDB(**interview_doc)
-            # Tạo đối tượng InterviewPublic, có thể chọn lọc các trường ở đây nếu cần
-            # Hoặc đảm bảo model InterviewPublic định nghĩa rõ các trường muốn trả về
-            public_data = validated_interview.model_dump()  # Lấy tất cả từ model_dump của InterviewInDB
+            public_data = validated_interview.model_dump()
             public_data["id"] = interview_doc_id_str
-            # Có thể bạn muốn loại bỏ các list câu hỏi/trả lời dài dòng ở view danh sách
-            # và chỉ hiển thị chúng ở view chi tiết
             public_data.pop("general_questions_snapshot", None)
             public_data.pop("general_answers_and_feedback", None)
             public_data.pop("specialized_questions_snapshot", None)
             public_data.pop("specialized_answers_and_feedback", None)
-
+            # candidate_info_raw đã có sẵn trong validated_interview.model_dump()
+            # và InterviewPublic cũng có trường này nên sẽ được tự động map
             interviews_list.append(InterviewPublic(**public_data))
         except Exception as e:
             print(f"Error validating/transforming interview doc {interview_doc_id_str} from DB for list view: {e}")
@@ -77,10 +72,11 @@ async def get_interview_by_id(interview_db_id: str, db: AsyncIOMotorDatabase = D
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interview not found.")
 
     try:
-        # Khi xem chi tiết, chúng ta muốn trả về tất cả thông tin, bao gồm cả Q&A
         interview_instance = InterviewInDB(**interview_doc)
+        # SỬA Ở ĐÂY: Đảm bảo candidate_info_raw được truyền vào
         public_representation = InterviewPublic(
             id=str(interview_doc["_id"]),
+            candidate_info_raw=interview_instance.candidate_info_raw, # <--- THÊM DÒNG NÀY
             lifecycle_status=interview_instance.lifecycle_status,
             selected_field=interview_instance.selected_field,
             desired_position_in_field=interview_instance.desired_position_in_field,
@@ -93,8 +89,6 @@ async def get_interview_by_id(interview_db_id: str, db: AsyncIOMotorDatabase = D
             updated_at=interview_instance.updated_at,
             end_time=interview_instance.end_time,
             is_completed=interview_instance.is_completed
-            # Không cần truyền general_questions_snapshot và specialized_questions_snapshot
-            # trừ khi model InterviewPublic yêu cầu (hiện tại không)
         )
         return public_representation
     except Exception as e:

@@ -10,6 +10,28 @@ function AdminInterviewDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Nhãn cho các trường thông tin ứng viên
+  const candidateInfoLabels = {
+    full_name: "Họ và tên",
+    email: "Email",
+    date_of_birth: "Ngày sinh",
+    gender: "Giới tính",
+    phone_number: "Điện thoại",
+    education_level: "Trình độ học vấn",
+    major_specialization: "Chuyên ngành",
+    school_university: "Trường học",
+    has_work_experience: "Có kinh nghiệm làm việc",
+    years_of_experience: "Số năm kinh nghiệm",
+    experience_field: "Lĩnh vực kinh nghiệm",
+    interested_field: "Lĩnh vực quan tâm",
+    career_goal_short: "Mục tiêu nghề nghiệp",
+    key_skills: "Kỹ năng nổi bật",
+    cv_link: "Link CV",
+    linkedin_profile: "LinkedIn Profile",
+    portfolio_github: "Portfolio / GitHub"
+  };
+
+
   useEffect(() => {
     const fetchInterviewDetail = async () => {
       setIsLoading(true);
@@ -55,7 +77,7 @@ function AdminInterviewDetailPage() {
   
   const getLifecycleStatusName = (status) => {
     const names = {
-        "collecting_candidate_info": "Đang thu thập thông tin",
+        "info_submitted": "Đã gửi thông tin",
         "general_in_progress": "Đang hỏi chung",
         "awaiting_specialization": "Chờ chọn lĩnh vực",
         "specialized_in_progress": "Đang hỏi chuyên ngành",
@@ -66,7 +88,7 @@ function AdminInterviewDetailPage() {
   }
   
   const renderQnAItem = (item, index, typePrefix) => (
-    <div key={`${typePrefix}-${item.question_key || item.question_id}-${index}`} className="qna-item">
+    <div key={`${typePrefix}-${item.question_id}-${index}`} className="qna-item">
         <p className="qna-question"><strong>Câu hỏi {index + 1}:</strong> {item.question_text}</p>
         <p className="qna-answer"><strong>Ứng viên trả lời:</strong> <span dangerouslySetInnerHTML={{ __html: item.candidate_answer ? item.candidate_answer.replace(/\n/g, '<br />') : "<em>Chưa trả lời</em>" }} /></p>
         {item.ai_feedback_per_answer && (
@@ -75,15 +97,61 @@ function AdminInterviewDetailPage() {
     </div>
   );
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+  const formatDateString = (dateString) => {
+    if (!dateString) return 'Chưa cung cấp';
     try {
-        const dateObj = new Date(dateString + 'T00:00:00Z');
-        return dateObj.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      // Giả sử dateString là dạng YYYY-MM-DD (từ datetime.date.isoformat())
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      // Nếu là datetime string đầy đủ
+      const dateObj = new Date(dateString);
+      return dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch (e) {
-        return dateString;
+      return dateString; // Trả về chuỗi gốc nếu không parse được
     }
   };
+  
+  const renderCandidateInfo = (info) => {
+    if (!info || Object.keys(info).length === 0) {
+      return <p>Không có thông tin ứng viên được cung cấp.</p>;
+    }
+    return Object.entries(info).map(([key, value]) => {
+      if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) {
+        return null; // Bỏ qua các trường null, undefined hoặc mảng rỗng
+      }
+      const label = candidateInfoLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      let displayValue = value;
+
+      if (key === 'date_of_birth') {
+        displayValue = formatDateString(value);
+      } else if (key === 'has_work_experience') {
+        displayValue = value ? `Có (${info.years_of_experience || 0} năm kinh nghiệm - Lĩnh vực: ${info.experience_field || 'Không rõ'})` : 'Chưa có kinh nghiệm';
+        // Không hiển thị years_of_experience và experience_field riêng nữa nếu đã gộp
+        if(value) {
+            delete info.years_of_experience; 
+            delete info.experience_field;
+        }
+      } else if (Array.isArray(value)) {
+        displayValue = value.join(', ');
+      } else if (typeof value === 'boolean') {
+        displayValue = value ? 'Có' : 'Không';
+      } else if ((key.includes('link') || key.includes('profile') || key.includes('portfolio')) && typeof value === 'string' && value.startsWith('http')) {
+        displayValue = <a href={value} target="_blank" rel="noopener noreferrer" className="admin-link">{value}</a>;
+      }
+
+
+      // Chỉ render nếu key không bị xóa (như years_of_experience, experience_field sau khi gộp)
+      if (info.hasOwnProperty(key)) {
+          return (
+            <p key={key}><strong>{label}:</strong> {displayValue}</p>
+          );
+      }
+      return null;
+    }).filter(Boolean); // Lọc bỏ các giá trị null
+  };
+
 
   return (
     <div className="admin-interview-detail-page">
@@ -95,35 +163,6 @@ function AdminInterviewDetailPage() {
       </div>
 
       <h1>Chi Tiết Buổi Phỏng Vấn</h1>
-
-      {interview.candidate_info && (
-           <div className="admin-section-card interview-candidate-info-card">
-               <h3>Thông Tin Ứng Viên Đã Cung Cấp</h3>
-               <div className="info-grid">
-                    <p><strong>Họ và tên:</strong> {interview.candidate_info.full_name || 'Chưa cung cấp'}</p>
-                    <p><strong>Email:</strong> {interview.candidate_info.email || 'Chưa cung cấp'}</p>
-                    <p><strong>Ngày sinh:</strong> {formatDate(interview.candidate_info.date_of_birth)}</p>
-                    <p><strong>Giới tính:</strong> {interview.candidate_info.gender || 'Chưa cung cấp'}</p>
-                    <p><strong>Điện thoại:</strong> {interview.candidate_info.phone_number || 'Chưa cung cấp'}</p>
-                    <p><strong>Trình độ học vấn:</strong> {interview.candidate_info.education_level || 'Chưa cung cấp'}</p>
-                    <p><strong>Chuyên ngành:</strong> {interview.candidate_info.major_specialization || 'Chưa cung cấp'}</p>
-                    <p><strong>Trường học:</strong> {interview.candidate_info.school_university || 'Chưa cung cấp'}</p>
-                    <p><strong>Kinh nghiệm:</strong> {interview.candidate_info.has_work_experience ? `${interview.candidate_info.years_of_experience || 0} năm (Lĩnh vực: ${interview.candidate_info.experience_field || 'Không rõ'})` : 'Chưa có kinh nghiệm'}</p>
-                    <p><strong>Lĩnh vực quan tâm:</strong> {interview.candidate_info.interested_field || 'Chưa cung cấp'}</p>
-                    <p><strong>Mục tiêu nghề nghiệp:</strong> {interview.candidate_info.career_goal_short || 'Chưa cung cấp'}</p>
-                    <p><strong>Kỹ năng nổi bật:</strong> {interview.candidate_info.key_skills && interview.candidate_info.key_skills.length > 0 ? interview.candidate_info.key_skills.join(', ') : 'Chưa cung cấp'}</p>
-                    {interview.candidate_info.language_proficiency && Object.keys(interview.candidate_info.language_proficiency).length > 0 && (
-                        <p><strong>Ngoại ngữ:</strong> 
-                            {Object.entries(interview.candidate_info.language_proficiency).map(([lang, level]) => `${lang}: ${level}`).join('; ')}
-                        </p>
-                    )}
-                    {interview.candidate_info.cv_link && <p><strong>CV:</strong> <a href={interview.candidate_info.cv_link} target="_blank" rel="noopener noreferrer" className="admin-link">Xem CV</a></p>}
-                    {interview.candidate_info.linkedin_profile && <p><strong>LinkedIn:</strong> <a href={interview.candidate_info.linkedin_profile} target="_blank" rel="noopener noreferrer" className="admin-link">Xem LinkedIn</a></p>}
-                    {interview.candidate_info.portfolio_github && <p><strong>Portfolio/GitHub:</strong> <a href={interview.candidate_info.portfolio_github} target="_blank" rel="noopener noreferrer" className="admin-link">Xem Portfolio/GitHub</a></p>}
-                    {interview.candidate_info.submitted_at && <p><strong>Hoàn thành thông tin lúc:</strong> {new Date(interview.candidate_info.submitted_at).toLocaleString('vi-VN')}</p>}
-               </div>
-           </div>
-       )}
 
       <div className="admin-section-card interview-summary-card">
         <h3>Thông Tin Buổi Phỏng Vấn</h3>
@@ -146,6 +185,16 @@ function AdminInterviewDetailPage() {
             )}
         </div>
       </div>
+      
+      {/* PHẦN HIỂN THỊ THÔNG TIN ỨNG VIÊN */}
+      {interview.candidate_info_raw && (
+           <div className="admin-section-card interview-candidate-info-card">
+               <h3>Thông Tin Ứng Viên Đã Cung Cấp</h3>
+               <div className="info-grid">
+                    {renderCandidateInfo(interview.candidate_info_raw)}
+               </div>
+           </div>
+       )}
 
       {interview.general_answers_and_feedback && interview.general_answers_and_feedback.length > 0 && (
         <div className="admin-section-card interview-qna-section">
