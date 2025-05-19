@@ -5,7 +5,7 @@ import { AuthAdminContext } from '../../contexts/AuthAdminContext';
 
 import './AdminGlobal.css'; // Import global styles
 import './AdminLayout.css';         // Import layout specific styles
-
+  
 function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();

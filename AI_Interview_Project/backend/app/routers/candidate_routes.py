@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from bson import ObjectId
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import json
 from typing import Dict, Any, List, Optional
 
@@ -13,9 +13,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from ..models import (
     InterviewQuestionResponse, AnswerPayload, AIFeedbackResponse,
     AnswerWithFeedback, OverallAssessment, Question, QuestionSetInDB,
-    InterviewInDB, SpecializedField, SelectFieldPayload, InterviewLifecycleStatus
+    InterviewInDB, SpecializedField, SelectFieldPayload, InterviewLifecycleStatus,
+    CandidateInfoPayload, SubmitCandidateInfoResponse
 )
-from ..sample_data import (  # Hoặc from ..sample_data nếu bạn tách file
+from ..sample_data import (
     DEFAULT_GENERAL_QSET_ID,
     DEFAULT_DEVELOPER_QSET_ID,
     DEFAULT_DESIGNER_QSET_ID
@@ -24,10 +25,82 @@ from ..sample_data import (  # Hoặc from ..sample_data nếu bạn tách file
 router = APIRouter()
 
 
-@router.get("/start-interview", response_model=AIFeedbackResponse)
-async def start_interview_endpoint(db: AsyncIOMotorDatabase = Depends(get_database)):
-    question_set_collection = db.get_collection("question_sets")
+@router.post("/submit-candidate-info", response_model=SubmitCandidateInfoResponse)
+async def submit_candidate_info_endpoint(
+        payload: CandidateInfoPayload,
+        db: AsyncIOMotorDatabase = Depends(get_database)
+):
     interview_collection = db.get_collection("interviews")
+    current_time = datetime.now(timezone.utc)
+
+    # Xử lý payload trước khi dump
+    candidate_info_to_save = payload.model_dump(exclude_none=True)
+    if 'date_of_birth' in candidate_info_to_save and isinstance(candidate_info_to_save['date_of_birth'], date):
+        candidate_info_to_save['date_of_birth'] = candidate_info_to_save['date_of_birth'].isoformat()
+
+
+    new_interview_data = InterviewInDB(
+        candidate_info_raw=candidate_info_to_save, # Sử dụng dict đã xử lý
+        lifecycle_status="info_submitted",
+        updated_at=current_time,
+        start_time=current_time,
+        desired_position_in_field=payload.interested_field,
+    )
+
+    try:
+        db_entry = new_interview_data.model_dump(by_alias=True, exclude_none=True)
+        result = await interview_collection.insert_one(db_entry)
+        interview_db_id = str(result.inserted_id)
+
+        return SubmitCandidateInfoResponse(
+            interview_id=interview_db_id,
+            message="Candidate info submitted successfully. Interview record created."
+        )
+
+    except Exception as e:
+        print(f"Error saving to MongoDB or creating interview: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save candidate information: {str(e)}" # Giữ lại thông báo lỗi gốc từ exception
+        )
+
+
+@router.post("/interviews/{interview_id}/start-general", response_model=AIFeedbackResponse)
+async def start_general_phase_endpoint(
+        interview_id: str,
+        db: AsyncIOMotorDatabase = Depends(get_database)
+):
+    interview_collection = db.get_collection("interviews")
+    question_set_collection = db.get_collection("question_sets")
+
+    try:
+        interview_oid = ObjectId(interview_id)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid interview_id format.")
+
+    interview_doc = await interview_collection.find_one({"_id": interview_oid})
+    if not interview_doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interview session not found.")
+
+    current_interview = InterviewInDB(**interview_doc)
+
+    if current_interview.lifecycle_status not in ["info_submitted", "awaiting_specialization", "completed",
+                                                  "abandoned"]:
+        if current_interview.lifecycle_status == "general_in_progress" and current_interview.general_questions_snapshot:
+            first_q = current_interview.general_questions_snapshot[0]
+            is_last = len(current_interview.general_questions_snapshot) == 1
+            return AIFeedbackResponse(
+                interview_db_id=interview_id,
+                feedback="Continuing interview session.",
+                next_question=InterviewQuestionResponse(
+                    question_id=first_q.id,
+                    question_text=first_q.text,
+                    is_last_question=is_last
+                ),
+                interview_lifecycle_status=current_interview.lifecycle_status,
+            )
+    # For 'info_submitted', 'awaiting_specialization' (if re-starting general), 'completed', 'abandoned'
+    # we will (re)load general questions.
 
     default_general_qset_doc = await question_set_collection.find_one({
         "is_default_general": True,
@@ -47,22 +120,33 @@ async def start_interview_endpoint(db: AsyncIOMotorDatabase = Depends(get_databa
                             detail="Default general question set has no questions.")
 
     current_time = datetime.now(timezone.utc)
-    new_interview_entry = InterviewInDB(
-        start_time=current_time,
-        updated_at=current_time,
-        lifecycle_status="general_in_progress",
-        general_question_set_id_name=qset_from_db.id_name,
-        general_questions_snapshot=[q.model_dump() for q in general_questions_snapshot]
-    )
 
-    result = await interview_collection.insert_one(new_interview_entry.model_dump(by_alias=True, exclude_none=True))
-    interview_db_id = str(result.inserted_id)
+    update_data = {
+        "start_time": current_interview.start_time or current_time,
+        "updated_at": current_time,
+        "lifecycle_status": "general_in_progress",
+        "general_question_set_id_name": qset_from_db.id_name,
+        "general_questions_snapshot": [q.model_dump() for q in general_questions_snapshot],
+        "general_answers_and_feedback": [],
+        "selected_field": "none",
+        "specialized_question_set_id_name": None,
+        "specialized_questions_snapshot": None,
+        "specialized_answers_and_feedback": [],
+        "overall_assessment": None,
+        "is_completed": False,
+        "end_time": None
+    }
+
+    await interview_collection.update_one(
+        {"_id": interview_oid},
+        {"$set": update_data}
+    )
 
     current_question_for_response = general_questions_snapshot[0]
     is_last_in_phase = (len(general_questions_snapshot) == 1)
 
     return AIFeedbackResponse(
-        interview_db_id=interview_db_id,
+        interview_db_id=interview_id,
         feedback="Chào mừng bạn đến với buổi phỏng vấn tự động! Hãy bắt đầu với một số câu hỏi chung.",
         next_question=InterviewQuestionResponse(
             question_id=current_question_for_response.id,
@@ -177,6 +261,9 @@ async def submit_answer_endpoint(payload: AnswerPayload, db: AsyncIOMotorDatabas
     answer_update_field_name: str
 
     if current_interview.lifecycle_status == "general_in_progress":
+        if not current_interview.general_questions_snapshot:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="General questions not loaded for this interview phase.")
         questions_snapshot = current_interview.general_questions_snapshot
         answers_list = current_interview.general_answers_and_feedback
         answer_update_field_name = "general_answers_and_feedback"
@@ -271,7 +358,7 @@ Nhận xét của bạn:"""
 
             full_transcript = "Phần câu hỏi chung:\n"
             answers_for_general_transcript = current_interview.general_answers_and_feedback
-            if answer_update_field_name == "general_answers_and_feedback":
+            if answer_update_field_name == "general_answers_and_feedback":  # Should be updated_answers_for_current_phase if in general phase
                 answers_for_general_transcript = updated_answers_for_current_phase
 
             for i, item in enumerate(answers_for_general_transcript):
@@ -283,7 +370,8 @@ Nhận xét của bạn:"""
 
             if answers_for_specialized_transcript:
                 full_transcript += f"Phần câu hỏi chuyên môn ({current_interview.selected_field}):\n"
-                actual_desired_position = desired_position_update if desired_position_update else "Chưa rõ"
+                actual_desired_position = desired_position_update if desired_position_update else (
+                            current_interview.desired_position_in_field or "Chưa rõ")
                 full_transcript += f"  Vị trí ứng tuyển mong muốn: {actual_desired_position}\n"
                 for i, item in enumerate(answers_for_specialized_transcript):
                     full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n  Nhận xét AI: {item.ai_feedback_per_answer}\n\n"
@@ -291,15 +379,19 @@ Nhận xét của bạn:"""
             if app_globals.gemini_model:
                 raw_json_text_from_ai_for_error = "AI response not captured yet for error logging."
                 try:
-                    prompt_for_final_assessment = f"""Dựa vào toàn bộ nội dung buổi phỏng vấn dưới đây, bao gồm cả câu hỏi chung và câu hỏi chuyên môn cho lĩnh vực '{current_interview.selected_field}':
+                    final_assessment_field = current_interview.selected_field if current_interview.selected_field != "none" else "Chung"
+                    final_desired_position = desired_position_update if desired_position_update else (
+                                current_interview.desired_position_in_field or "Chưa rõ")
+
+                    prompt_for_final_assessment = f"""Dựa vào toàn bộ nội dung buổi phỏng vấn dưới đây, bao gồm cả câu hỏi chung và câu hỏi chuyên môn cho lĩnh vực '{final_assessment_field}':
 {full_transcript}
-Ứng viên mong muốn ứng tuyển vào vị trí: '{desired_position_update if desired_position_update else "Chưa rõ"}'.
+Ứng viên mong muốn ứng tuyển vào vị trí: '{final_desired_position}'.
 
 Hãy đưa ra đánh giá tổng thể theo định dạng JSON sau. Đảm bảo output là một JSON object hợp lệ.
 LƯU Ý QUAN TRỌNG: 
 - "status": Chỉ được là một trong ba giá trị "Đạt", "Không đạt", "Cần xem xét thêm".
-- "suitability_for_field": Đánh giá mức độ phù hợp của ứng viên với lĩnh vực '{current_interview.selected_field}'. Ví dụ: "Rất phù hợp", "Phù hợp", "Có tiềm năng nhưng cần cải thiện", "Ít phù hợp", "Không phù hợp".
-- "suggested_positions": Dựa trên câu trả lời và lĩnh vực '{current_interview.selected_field}', hãy gợi ý 1-2 vị trí cụ thể mà ứng viên có thể phù hợp nhất. Nếu không phù hợp hoặc không thể xác định, để là một mảng rỗng [].
+- "suitability_for_field": Đánh giá mức độ phù hợp của ứng viên với lĩnh vực '{final_assessment_field}'. Ví dụ: "Rất phù hợp", "Phù hợp", "Có tiềm năng nhưng cần cải thiện", "Ít phù hợp", "Không phù hợp".
+- "suggested_positions": Dựa trên câu trả lời và lĩnh vực '{final_assessment_field}', hãy gợi ý 1-2 vị trí cụ thể mà ứng viên có thể phù hợp nhất. Nếu không phù hợp hoặc không thể xác định, để là một mảng rỗng [].
 
 {{
   "strengths": ["Liệt kê 2-3 điểm mạnh chính của ứng viên dựa trên TOÀN BỘ buổi phỏng vấn"],

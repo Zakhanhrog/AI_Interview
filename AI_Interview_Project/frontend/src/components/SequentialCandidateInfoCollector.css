@@ -1,0 +1,163 @@
+.sequential-info-collector {
+    background-color: #ffffff;
+    padding: 25px 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    box-sizing: border-box;
+    animation: collector-appear 0.5s ease-out;
+}
+
+@keyframes collector-appear {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.collector-title {
+    text-align: center;
+    font-size: 1.6em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.collector-progress {
+    text-align: center;
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.collector-form .admin-form-group {
+    margin-bottom: 20px;
+}
+
+.collector-form .admin-form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #343a40;
+    font-size: 0.95rem;
+}
+
+.collector-form .admin-form-group label .required-asterisk {
+    color: #e74c3c;
+    margin-left: 4px;
+}
+
+.collector-form .admin-form-group input[type="text"],
+.collector-form .admin-form-group input[type="email"],
+.collector-form .admin-form-group input[type="tel"],
+.collector-form .admin-form-group input[type="date"],
+.collector-form .admin-form-group input[type="number"],
+.collector-form .admin-form-group input[type="url"],
+.collector-form .admin-form-group textarea,
+.collector-form .admin-form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #f8f9fa;
+}
+
+.collector-form .admin-form-group input:focus,
+.collector-form .admin-form-group textarea:focus,
+.collector-form .admin-form-group select:focus {
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.15);
+    outline: none;
+    background-color: #fff;
+}
+
+.collector-form .admin-form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.collector-checkbox-group {
+    display: flex;
+    align-items: center;
+    padding-top: 5px;
+}
+
+.collector-checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    accent-color: #1abc9c;
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.collector-checkbox-label {
+    font-weight: normal !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 0 !important;
+    color: #495057 !important;
+    cursor: pointer;
+}
+
+.field-note {
+    display: block;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 6px;
+}
+
+.collector-error-message {
+    color: #b82112;
+    background-color: #fdedec;
+    border: 1px solid #f5b7b1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    text-align: left;
+}
+
+.collector-error-message.overall-error {
+    margin-bottom: 20px; 
+    text-align: center;
+}
+
+.collector-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1rem;
+    margin-top: 25px;
+    background-color: #1abc9c;
+    color: white;
+    font-weight: 500;
+}
+.collector-button:hover:not(:disabled){
+    background-color: #16a085;
+}
+
+@media (max-width: 600px) {
+    .sequential-info-collector {
+        padding: 20px;
+        margin: 10px;
+    }
+    .collector-title {
+        font-size: 1.4em;
+    }
+    .collector-form .admin-form-group label {
+        font-size: 0.9rem;
+    }
+    .collector-form .admin-form-group input,
+    .collector-form .admin-form-group textarea,
+    .collector-form .admin-form-group select {
+        font-size: 0.95rem;
+        padding: 9px 12px;
+    }
+    .collector-button {
+        font-size: 0.95rem;
+    }
+}
