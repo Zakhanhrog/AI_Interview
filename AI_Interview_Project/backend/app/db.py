@@ -16,9 +16,6 @@ async def connect_to_mongo():
         print("MongoDB connection already established.")
         return
 
-    # Xây dựng connection string với các tùy chọn codec
-    # Thêm uuidRepresentation=standard và tz_aware=true vào URI
-    # Kiểm tra xem settings.MONGODB_URL đã có dấu '?' chưa
     separator = '&' if '?' in settings.MONGODB_URL else '?'
     connection_uri = f"{settings.MONGODB_URL}{separator}uuidRepresentation=standard&tz_aware=true"
 

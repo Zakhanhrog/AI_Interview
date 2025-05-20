@@ -40,7 +40,7 @@ async def submit_candidate_info_endpoint(
 
 
     new_interview_data = InterviewInDB(
-        candidate_info_raw=candidate_info_to_save, # Sử dụng dict đã xử lý
+        candidate_info_raw=candidate_info_to_save,
         lifecycle_status="info_submitted",
         updated_at=current_time,
         start_time=current_time,
@@ -99,8 +99,6 @@ async def start_general_phase_endpoint(
                 ),
                 interview_lifecycle_status=current_interview.lifecycle_status,
             )
-    # For 'info_submitted', 'awaiting_specialization' (if re-starting general), 'completed', 'abandoned'
-    # we will (re)load general questions.
 
     default_general_qset_doc = await question_set_collection.find_one({
         "is_default_general": True,

@@ -51,8 +51,6 @@ async def get_all_interviews(
             public_data.pop("general_answers_and_feedback", None)
             public_data.pop("specialized_questions_snapshot", None)
             public_data.pop("specialized_answers_and_feedback", None)
-            # candidate_info_raw đã có sẵn trong validated_interview.model_dump()
-            # và InterviewPublic cũng có trường này nên sẽ được tự động map
             interviews_list.append(InterviewPublic(**public_data))
         except Exception as e:
             print(f"Error validating/transforming interview doc {interview_doc_id_str} from DB for list view: {e}")
