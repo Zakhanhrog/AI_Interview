@@ -83,13 +83,19 @@ class AnswerWithFeedback(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class StrengthWeaknessDetail(BaseModel):
+    point: str
+    evidence: str
+
+
 class OverallAssessment(BaseModel):
-    strengths: List[str] = []
-    weaknesses: List[str] = []
+    overall_summary_comment: Optional[str] = None
+    strengths_analysis: List[StrengthWeaknessDetail] = Field(default_factory=list)
+    weaknesses_analysis: List[StrengthWeaknessDetail] = Field(default_factory=list)
     status: str
-    suggestions_if_not_pass: Optional[str] = None
     suitability_for_field: Optional[str] = None
     suggested_positions: Optional[List[str]] = None
+    suggestions_if_not_pass: Optional[str] = None
     raw_ai_summary_text: Optional[str] = None
 
 

@@ -1,6 +1,6 @@
 # backend/app/routers/admin_auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm  # Form chuẩn cho login
+from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
 # Đảm bảo đường dẫn import đúng dựa trên cấu trúc thư mục của bạn

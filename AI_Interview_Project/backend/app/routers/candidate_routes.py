@@ -14,7 +14,7 @@ from ..models import (
     InterviewQuestionResponse, AnswerPayload, AIFeedbackResponse,
     AnswerWithFeedback, OverallAssessment, Question, QuestionSetInDB,
     InterviewInDB, SpecializedField, SelectFieldPayload, InterviewLifecycleStatus,
-    CandidateInfoPayload, SubmitCandidateInfoResponse
+    CandidateInfoPayload, SubmitCandidateInfoResponse, StrengthWeaknessDetail
 )
 from ..sample_data import (
     DEFAULT_GENERAL_QSET_ID,
@@ -33,7 +33,6 @@ async def submit_candidate_info_endpoint(
     interview_collection = db.get_collection("interviews")
     current_time = datetime.now(timezone.utc)
 
-    # Xử lý payload trước khi dump
     candidate_info_to_save = payload.model_dump(exclude_none=True)
     if 'date_of_birth' in candidate_info_to_save and isinstance(candidate_info_to_save['date_of_birth'], date):
         candidate_info_to_save['date_of_birth'] = candidate_info_to_save['date_of_birth'].isoformat()
@@ -61,7 +60,7 @@ async def submit_candidate_info_endpoint(
         print(f"Error saving to MongoDB or creating interview: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save candidate information: {str(e)}" # Giữ lại thông báo lỗi gốc từ exception
+            detail=f"Failed to save candidate information: {str(e)}"
         )
 
 
@@ -331,7 +330,6 @@ Nhận xét của bạn:"""
     available_fields: Optional[List[SpecializedField]] = None
     is_final_assessment_now_ready = False
     final_assessment_payload: Optional[OverallAssessment] = None
-
     next_question_index_in_phase = current_question_index_in_list + 1
 
     if next_question_index_in_phase < len(questions_snapshot):
@@ -356,11 +354,11 @@ Nhận xét của bạn:"""
 
             full_transcript = "Phần câu hỏi chung:\n"
             answers_for_general_transcript = current_interview.general_answers_and_feedback
-            if answer_update_field_name == "general_answers_and_feedback":  # Should be updated_answers_for_current_phase if in general phase
+            if answer_update_field_name == "general_answers_and_feedback":
                 answers_for_general_transcript = updated_answers_for_current_phase
 
             for i, item in enumerate(answers_for_general_transcript):
-                full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n  Nhận xét AI: {item.ai_feedback_per_answer}\n\n"
+                full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n" # Bỏ ai_feedback_per_answer khỏi transcript chính
 
             answers_for_specialized_transcript = current_interview.specialized_answers_and_feedback
             if answer_update_field_name == "specialized_answers_and_feedback":
@@ -372,7 +370,7 @@ Nhận xét của bạn:"""
                             current_interview.desired_position_in_field or "Chưa rõ")
                 full_transcript += f"  Vị trí ứng tuyển mong muốn: {actual_desired_position}\n"
                 for i, item in enumerate(answers_for_specialized_transcript):
-                    full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n  Nhận xét AI: {item.ai_feedback_per_answer}\n\n"
+                    full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n" # Bỏ ai_feedback_per_answer
 
             if app_globals.gemini_model:
                 raw_json_text_from_ai_for_error = "AI response not captured yet for error logging."
@@ -381,25 +379,45 @@ Nhận xét của bạn:"""
                     final_desired_position = desired_position_update if desired_position_update else (
                                 current_interview.desired_position_in_field or "Chưa rõ")
 
-                    prompt_for_final_assessment = f"""Dựa vào toàn bộ nội dung buổi phỏng vấn dưới đây, bao gồm cả câu hỏi chung và câu hỏi chuyên môn cho lĩnh vực '{final_assessment_field}':
-{full_transcript}
+                    prompt_for_final_assessment = f"""Bạn là một chuyên gia tuyển dụng AI giàu kinh nghiệm. Nhiệm vụ của bạn là phân tích kỹ lưỡng TOÀN BỘ buổi phỏng vấn dưới đây và đưa ra đánh giá chi tiết, khách quan.
+Buổi phỏng vấn bao gồm:
+1. Phần câu hỏi chung.
+2. Phần câu hỏi chuyên môn cho lĩnh vực: '{final_assessment_field}'.
 Ứng viên mong muốn ứng tuyển vào vị trí: '{final_desired_position}'.
 
-Hãy đưa ra đánh giá tổng thể theo định dạng JSON sau. Đảm bảo output là một JSON object hợp lệ.
-LƯU Ý QUAN TRỌNG: 
-- "status": Chỉ được là một trong ba giá trị "Đạt", "Không đạt", "Cần xem xét thêm".
-- "suitability_for_field": Đánh giá mức độ phù hợp của ứng viên với lĩnh vực '{final_assessment_field}'. Ví dụ: "Rất phù hợp", "Phù hợp", "Có tiềm năng nhưng cần cải thiện", "Ít phù hợp", "Không phù hợp".
-- "suggested_positions": Dựa trên câu trả lời và lĩnh vực '{final_assessment_field}', hãy gợi ý 1-2 vị trí cụ thể mà ứng viên có thể phù hợp nhất. Nếu không phù hợp hoặc không thể xác định, để là một mảng rỗng [].
+Đây là toàn bộ nội dung buổi phỏng vấn (chỉ bao gồm câu hỏi và câu trả lời của ứng viên):
+--- BEGIN INTERVIEW TRANSCRIPT ---
+{full_transcript}
+--- END INTERVIEW TRANSCRIPT ---
+
+YÊU CẦU PHÂN TÍCH VÀ ĐÁNH GIÁ:
+Hãy xem xét TẤT CẢ các câu trả lời của ứng viên từ ĐẦU ĐẾN CUỐI buổi phỏng vấn.
+Đối với mỗi nhận định về điểm mạnh hoặc điểm yếu, hãy cố gắng chỉ ra nó được thể hiện qua câu trả lời cho câu hỏi nào hoặc qua tình huống nào trong buổi phỏng vấn.
+
+Hãy đưa ra đánh giá của bạn theo định dạng JSON sau. Đảm bảo output là một JSON object hợp lệ:
 
 {{
-  "strengths": ["Liệt kê 2-3 điểm mạnh chính của ứng viên dựa trên TOÀN BỘ buổi phỏng vấn"],
-  "weaknesses": ["Liệt kê 1-2 điểm yếu/cần cải thiện chính"],
-  "status": "Đạt", 
-  "suitability_for_field": "Phù hợp",
-  "suggested_positions": ["Vị trí gợi ý 1"],
-  "suggestions_if_not_pass": null
+  "overall_summary_comment": "Một đoạn nhận xét tổng quan (3-5 câu) về phong thái chung, khả năng giao tiếp, sự tự tin, và tư duy phản biện của ứng viên xuyên suốt buổi phỏng vấn. Nhận xét này phải dựa trên cảm nhận từ toàn bộ quá trình, không chỉ một vài câu hỏi.",
+  "strengths_analysis": [
+    {{
+      "point": "Mô tả điểm mạnh cụ thể (ví dụ: Kiến thức chuyên môn sâu về Java Spring Boot).",
+      "evidence": "Thể hiện qua câu trả lời cho câu hỏi về [Nêu tên/nội dung câu hỏi] ở phần [Chung/Chuyên môn], nơi ứng viên đã [Mô tả cách ứng viên trả lời, ví dụ: giải thích chi tiết về cách sử dụng annotation XYZ, hoặc đưa ra ví dụ dự án thực tế]."
+    }}
+  ],
+  "weaknesses_analysis": [
+    {{
+      "point": "Mô tả điểm yếu/cần cải thiện (ví dụ: Kinh nghiệm thực tế với Kubernetes còn hạn chế).",
+      "evidence": "Qua câu trả lời cho câu hỏi về [Nêu tên/nội dung câu hỏi], ứng viên có vẻ chưa tự tin hoặc kiến thức còn ở mức lý thuyết."
+    }}
+  ],
+  "status": "Đạt",
+  "suitability_for_field": "Phù hợp với lĩnh vực '{final_assessment_field}' do [lý do ngắn gọn dựa trên phân tích]",
+  "suggested_positions": ["Vị trí gợi ý 1 (cụ thể hơn nếu có thể, ví dụ: Junior Java Developer with Spring Focus)"],
+  "suggestions_if_not_pass": "Nếu không đạt, ứng viên nên tập trung vào [Nêu cụ thể kỹ năng/kiến thức cần cải thiện dựa trên điểm yếu đã phân tích]"
 }}
-JSON Output:"""
+
+JSON Output:
+"""
                     response_final = await app_globals.gemini_model.generate_content_async(
                         prompt_for_final_assessment,
                         generation_config=GenerationConfig(response_mime_type="application/json")
