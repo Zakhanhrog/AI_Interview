@@ -1,0 +1,241 @@
+/* Modern Admin UI Theme - Improved Contrast */
+
+/* Reset/override previous neumorphic variables */
+:root {
+  --neumorphic-accent: #3182ce;
+  --neumorphic-accent-dark: #2b6cb0;
+  --neumorphic-accent-light: #4299e1;
+  --neumorphic-text: #1a202c;
+}
+
+/* Button design with improved contrast */
+.admin-button {
+  background: #3182ce;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 10px 18px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.01em;
+}
+
+.admin-button:hover:not(:disabled) {
+  background: #2b6cb0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Accent buttons */
+.admin-button-primary {
+  background: #3182ce;
+  color: white;
+  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+}
+
+.admin-button-primary:hover:not(:disabled) {
+  background: #2b6cb0;
+}
+
+.admin-button-danger {
+  background: #e53e3e;
+  color: white;
+  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+}
+
+.admin-button-danger:hover:not(:disabled) {
+  background: #c53030;
+}
+
+.admin-button-secondary {
+  background: #4a5568;
+  color: white;
+  box-shadow: 0 4px 6px rgba(74, 85, 104, 0.3);
+}
+
+.admin-button-secondary:hover:not(:disabled) {
+  background: #2d3748;
+}
+
+/* Card design with improved visibility */
+.admin-section-card {
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-section-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #3182ce;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.admin-section-card:hover::before {
+  opacity: 1;
+}
+
+/* Table row hover effect */
+.admin-table tbody tr {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  transform: scale(1.01);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom scrollbar for the entire admin section */
+.admin-layout {
+  --scrollbar-bg: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a1a1a1;
+}
+
+.admin-layout ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.admin-layout ::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+  border-radius: 10px;
+}
+
+.admin-layout ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 2px solid var(--scrollbar-bg);
+}
+
+.admin-layout ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Glassmorphism effect for modals */
+.admin-modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animated input focus effect */
+.admin-form-group {
+  position: relative;
+}
+
+.admin-form-group::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  background: var(--admin-nav-link-active-bg);
+  transition: width 0.3s ease, left 0.3s ease;
+  z-index: 1;
+}
+
+.admin-form-group:focus-within::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Ripple effect for buttons */
+.admin-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-button:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.admin-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* 3D hover effect for cards */
+.admin-section-card {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.admin-section-card:hover {
+  transform: rotateX(2deg) rotateY(2deg) translateY(-5px);
+}
+
+/* Floating labels - làm các input form trông hiện đại hơn */
+.admin-form-group.floating-label {
+  position: relative;
+}
+
+.admin-form-group.floating-label label {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  color: #718096;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  background: transparent;
+}
+
+.admin-form-group.floating-label input:focus ~ label,
+.admin-form-group.floating-label input:not(:placeholder-shown) ~ label,
+.admin-form-group.floating-label textarea:focus ~ label,
+.admin-form-group.floating-label textarea:not(:placeholder-shown) ~ label,
+.admin-form-group.floating-label select:focus ~ label {
+  top: -10px;
+  left: 10px;
+  font-size: 0.8rem;
+  padding: 0 5px;
+  background: white;
+  color: var(--admin-nav-link-active-bg);
+}

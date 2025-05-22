@@ -1,0 +1,280 @@
+/* Neumorphic Theme for Admin Layout - Enhanced Visibility */
+
+/* Update layout colors */
+.admin-layout {
+  background-color: #f0f4f8;
+  color: #1a202c;
+}
+
+/* Header styling with better contrast */
+.admin-main-header {
+  background: linear-gradient(to right, #1a202c, #2d3748);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  border-bottom: none;
+}
+
+.admin-main-header h2 {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation sidebar with better contrast */
+.admin-nav {
+  background: #1a202c;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-nav .admin-nav-item {
+  margin: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  font-weight: 500;
+}
+
+.admin-nav .admin-nav-item:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateX(5px);
+}
+
+.admin-nav .admin-nav-item.active {
+  background: #3182ce;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Button styles with better visibility */
+.admin-button {
+  background: #3182ce;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 10px 18px;
+}
+
+.admin-button:hover:not(:disabled) {
+  background: #2b6cb0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-button-danger {
+  background: #e53e3e;
+  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.25);
+}
+
+.admin-button-danger:hover:not(:disabled) {
+  background: #c53030;
+}
+
+/* Form elements with improved visibility */
+.admin-form-group label {
+  color: #1a202c;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.admin-form-group input[type="text"],
+.admin-form-group input[type="password"],
+.admin-form-group input[type="email"],
+.admin-form-group input[type="number"],
+.admin-form-group textarea,
+.admin-form-group select {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  color: #1a202c;
+  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 12px 16px;
+}
+
+.admin-form-group input:focus,
+.admin-form-group textarea:focus,
+.admin-form-group select:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+  outline: none;
+}
+
+/* Ensure section cards are clearly visible */
+.admin-section-card {
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-section-card h2 {
+  font-weight: 600;
+  color: #1a202c;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Improve table visibility */
+.admin-table th {
+  background-color: #f0f4f8;
+  color: #1a202c;
+  font-weight: 600;
+  border-bottom: 2px solid #cbd5e0;
+}
+
+.admin-table td {
+  color: #1a202c;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Dropdown menu styling with better contrast */
+.admin-user-dropdown {
+  background: #ffffff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.dropdown-item-info strong {
+  color: var(--neumorphic-text);
+}
+
+.dropdown-item-info small {
+  color: var(--neumorphic-text-light);
+}
+
+.dropdown-item-action {
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  color: var(--neumorphic-text);
+}
+
+.dropdown-item-action:hover {
+  background-color: #f7fafc;
+  color: var(--neumorphic-accent);
+}
+
+/* Fix cho các category/tag hiển thị */
+.category-tag, 
+.skill-tag, 
+.tag-selector, 
+.tag-item,
+.category-item {
+  background-color: #f0f4f8;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: inline-block;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-tag::before,
+.skill-tag::before,
+.tag-selector::before,
+.category-item::before {
+  content: none; /* Loại bỏ pattern backgrounds */
+}
+
+/* Chỉnh style cho select, options và dropdowns */
+select.category-select,
+select.skill-select {
+  background-color: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 300px;
+  font-size: 0.95rem;
+  color: #1a202c;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Cải thiện hiển thị cho category headers */
+.category-header, 
+.skill-header {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Sửa lỗi với các dropdown options */
+.dropdown-menu,
+.select-options {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-item,
+.select-option {
+  padding: 8px 12px;
+  color: #2d3748;
+  cursor: pointer;
+}
+
+.dropdown-item:hover,
+.select-option:hover {
+  background-color: #f7fafc;
+}
+
+/* Sửa hiển thị cho pattern backgrounds */
+[class*="pattern-"],
+[class*="v-pattern"] {
+  background-image: none !important;
+  border: 1px solid #e2e8f0;
+}
+
+/* Custom scrollbar for tables */
+.admin-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-table-wrapper::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.admin-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.admin-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Message boxes with clear visibility */
+.admin-message-success {
+  background-color: #ebf8ff;
+  border-color: #90cdf4;
+  color: #2b6cb0;
+}
+
+.admin-message-error {
+  background-color: #fff5f5;
+  border-color: #feb2b2;
+  color: #c53030;
+}
+
+/* Add focus styles for better accessibility */
+a:focus, button:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--neumorphic-accent);
+  outline-offset: 2px;
+}

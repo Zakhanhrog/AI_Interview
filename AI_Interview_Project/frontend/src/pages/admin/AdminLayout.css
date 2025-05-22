@@ -31,6 +31,7 @@
   padding: 8px;
   margin-right: 10px;
 }
+
 .admin-menu-toggle .material-icons {
   font-size: 28px;
 }
@@ -40,13 +41,13 @@
   display: flex;
   align-items: center;
 }
+
 .admin-header-title-area h2 {
   margin: 0;
   font-size: 1.3em;
   font-weight: 500;
   color: #ffffff;
 }
-
 
 .admin-user-info-container {
   position: relative;
@@ -64,18 +65,22 @@
   border-radius: 6px;
   transition: background-color 0.2s ease;
 }
+
 .admin-user-button:hover,
 .admin-user-button:focus {
   background-color: var(--admin-nav-link-hover-bg);
 }
+
 .admin-user-avatar-icon {
   font-size: 22px !important;
   margin-right: 8px;
   vertical-align: middle;
 }
+
 .admin-user-greeting {
-    vertical-align: middle;
+  vertical-align: middle;
 }
+
 .admin-user-dropdown-icon {
   margin-left: 4px;
   vertical-align: middle;
@@ -96,27 +101,32 @@
   display: flex;
   flex-direction: column;
 }
+
 .dropdown-item-info {
   padding: 10px 15px;
   display: flex;
   flex-direction: column;
 }
+
 .dropdown-item-info strong {
   font-weight: 600;
   color: var(--admin-text-primary);
   font-size: 0.9rem;
   margin-bottom: 2px;
 }
+
 .dropdown-item-info small {
   font-size: 0.8rem;
   color: var(--admin-text-secondary);
   word-break: break-all;
 }
+
 .dropdown-divider {
   border: none;
   border-top: 1px solid var(--admin-border-color);
   margin: 8px 0;
 }
+
 .dropdown-item-action {
   background: none;
   border: none;
@@ -131,22 +141,23 @@
   align-items: center;
   transition: background-color 0.2s ease;
 }
+
 .dropdown-item-action:hover {
   background-color: var(--admin-hover-bg);
 }
+
 .dropdown-item-action .material-icons {
   margin-right: 10px;
   font-size: 1.1rem;
   vertical-align: middle;
 }
 
-
 .admin-content-body {
   display: flex;
   flex-grow: 1;
   margin-top: 60px;
-  height: calc(100vh - 60px); /* Quan trọng: Đảm bảo body có chiều cao để overflow hoạt động */
-  overflow: hidden; /* Ngăn body tự scroll, để content-wrapper scroll */
+  height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
 .admin-nav {
@@ -157,11 +168,7 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  /* position: fixed; không cần fixed nữa nếu admin-content-body là flex container */
-  /* left: 0; */
-  /* top: 60px; */
-  /* bottom: 0; */
-  height: 100%; /* Chiếm toàn bộ chiều cao của admin-content-body */
+  height: 100%;
   z-index: 1000;
   overflow-y: auto; 
 }
@@ -169,7 +176,6 @@
 .admin-nav-header-placeholder {
   height: 20px;
 }
-
 
 .admin-nav ul {
   list-style: none;
@@ -181,60 +187,104 @@
 .admin-nav .admin-nav-item { 
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 14px 20px;
   text-decoration: none;
   color: var(--admin-nav-text-color);
   font-size: 0.9rem;
-  transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
+  transition: all 0.25s ease;
   border-left: 4px solid transparent;
   margin-left: -1px;
+  position: relative;
+  overflow: hidden;
 }
+
 .admin-nav .admin-nav-item:hover:not(.active) {
   background-color: var(--admin-nav-link-hover-bg);
   color: var(--admin-nav-text-hover-color);
-  border-left-color: var(--admin-nav-link-hover-bg);
+  border-left-color: rgba(236, 240, 241, 0.5);
+  transform: translateX(3px);
 }
+
+.admin-nav .admin-nav-item:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.admin-nav .admin-nav-item:hover:before {
+  width: 100%;
+}
+
 .admin-nav .admin-nav-item.active {
   background-color: var(--admin-nav-link-active-bg);
   color: var(--admin-nav-link-active-text);
   font-weight: 500;
   border-left-color: #ecf0f1;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
 .admin-nav .admin-nav-item .material-icons {
-  margin-right: 12px;
-  font-size: 1.2em; 
+  margin-right: 14px;
+  font-size: 1.3em; 
   min-width: 24px;
+  transition: transform 0.2s ease;
+}
+
+.admin-nav .admin-nav-item:hover .material-icons {
+  transform: scale(1.1);
 }
 
 .admin-nav-footer {
-  padding: 15px 20px;
-  border-top: 1px solid var(--admin-nav-link-hover-bg);
-}
-.admin-nav-footer .nav-link-button {
-    padding: 10px 15px;
-    border-left: 4px solid transparent;
-    margin-left: -1px;
-}
-.admin-nav-footer .nav-link-button:hover {
-    background-color: var(--admin-nav-link-hover-bg);
-    color: var(--admin-nav-text-hover-color);
+  padding: 18px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
+.admin-nav-footer .nav-link-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: var(--admin-nav-text-color);
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border-left: 4px solid transparent;
+  margin-left: -1px;
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-nav-footer .nav-link-button:hover {
+  background-color: var(--admin-nav-link-hover-bg);
+  color: var(--admin-nav-text-hover-color);
+  border-left-color: #ecf0f1;
+  transform: translateX(2px);
+}
+
+.admin-nav-footer .nav-link-button .material-icons {
+  margin-right: 12px;
+  font-size: 1.2em;
+  min-width: 24px;
+}
 
 .admin-content-wrapper {
   flex-grow: 1;
-  /* margin-left: 250px;  Không cần margin-left nếu admin-nav không fixed nữa */
-  overflow-y: auto; /* Đây là nơi scroll chính */
-  position: relative; /* Giữ lại để các phần tử con absolute có thể định vị */
-  height: 100%; /* Chiếm toàn bộ chiều cao của admin-content-body */
+  overflow-y: auto;
+  position: relative;
+  height: 100%;
 }
 
 .admin-content-container {
   padding: 25px 30px;
   box-sizing: border-box;
-  min-height: 100%; /* Đảm bảo container có chiều cao tối thiểu để thấy được nếu nội dung ít */
+  min-height: 100%;
 }
-
 
 @media (max-width: 992px) {
   .admin-main-header .admin-header-title-area h2 {
@@ -256,10 +306,16 @@
     font-size: 1.5em;
   }
   .admin-nav-footer .link-text { display: none; }
-  .admin-nav-footer .nav-link-button { justify-content: center; padding: 14px 0;}
+  .admin-nav-footer .nav-link-button {
+    justify-content: center;
+    padding: 14px 0;
+    transform: none;
+  }
+  .admin-nav-footer .nav-link-button:hover {
+    transform: none;
+    background-color: var(--admin-nav-link-hover-bg);
+  }
   .admin-nav-footer .nav-link-button .material-icons { margin-right: 0; font-size: 1.5em; }
-
-  /* .admin-content-wrapper { margin-left: 70px; } Không cần nữa */
   .admin-content-container { padding: 20px 25px; }
 }
 
@@ -268,7 +324,7 @@
     display: inline-flex; 
   }
   .admin-nav { 
-    position: fixed; /* Quay lại fixed cho mobile drawer */
+    position: fixed;
     left: 0;
     top: 60px; 
     height: calc(100vh - 60px);
@@ -280,6 +336,5 @@
     transform: translateX(0); 
     z-index: 1000; 
   }
-  /* .admin-content-wrapper { margin-left: 0; } Không cần nữa */
   .admin-header-title-area { margin-left: 5px; }
 }

@@ -154,9 +154,6 @@ async def initialize_default_qset_config(db_instance: AsyncIOMotorDatabase):
             "default_designer_qset_id_name": INITIAL_DEFAULT_DESIGNER_QSET_ID if design_exists else None,
             "updated_at": datetime.now(timezone.utc)
         }
-
-        # Use the Pydantic model to validate and create the document structure
-        # The alias for 'id' to '_id' in DefaultQuestionSetSettings will handle the _id field correctly
         initial_config = DefaultQuestionSetSettings(**initial_config_data)
 
         await settings_collection.insert_one(initial_config.model_dump(by_alias=True))  # by_alias=True to use '_id'

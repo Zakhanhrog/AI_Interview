@@ -1,0 +1,121 @@
+/* CSS riêng cho trang quản lý Bộ Câu Hỏi */
+
+/* Hiển thị các danh mục và kỹ năng */
+.question-set-categories,
+.question-set-skills {
+  margin-bottom: 20px;
+}
+
+.question-set-category,
+.question-set-skill {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.question-set-category:before,
+.question-set-skill:before {
+  display: none; /* Loại bỏ các pattern/decorations không cần thiết */
+}
+
+/* Fix hiển thị cho các category tags */
+.category-tag, 
+.skill-tag,
+.v-pattern {
+  background: #f8fafc;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 5px;
+  display: inline-block;
+  color: #2d3748;
+  position: relative;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: none;
+  background-image: none !important;
+}
+
+/* Fix cho thẻ "Chung / Kỹ năng mềm" */
+.v-pattern,
+div[class*="v-pattern"] {
+  background-image: none !important;
+  background-color: #ebf8ff !important;
+  border: 1px solid #90cdf4 !important;
+  color: #2b6cb0 !important;
+  box-shadow: none !important;
+}
+
+/* Tùy chỉnh cho select elements */
+.admin-form-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232d3748'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+/* Form layout for question set creation/editing */
+.question-set-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .question-set-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Question list styling */
+.question-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.question-item {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.question-item:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Styles for badges and indicators */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.badge-primary {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.badge-secondary {
+  background-color: #e9ecef;
+  color: #495057;
+}

@@ -205,15 +205,11 @@ body {
   border-bottom: 0px solid transparent;
   /* Updated to use the actual background color for the tail */
   border-left: 10px solid var(--bubble-sent-bg); 
-  /* Fix: Extract the start color of the gradient for solid tail */
-  /* If bubble-sent-bg is a gradient, tail color should be start/end color of gradient */
-  /* Using a simplified color or the primary accent for now */
-  /* border-left: 10px solid #6a11cb; */
   filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.02));
 }
 
 /* Temporary fix for answer tail if gradient causes issues with border trick */
-.message.answer { --tail-color: #6a11cb; /* End color of its gradient */ }
+.message.answer { --tail-color: #6a11cb; }
 .message.answer::after { border-left-color: var(--tail-color); }
 
 
@@ -592,9 +588,7 @@ body {
   font-weight: 500;   /* Độ đậm của chữ */
   
   border: none;       /* Bỏ viền mặc định (nếu có) */
-  /* ĐÂY LÀ THAY ĐỔI QUAN TRỌNG: Đặt border-radius thành giá trị nhỏ hơn */
   border-radius: var(--border-radius-md); /* Ví dụ: 12px hoặc 8px, 10px tùy bạn thích */
-  /* Hoặc một giá trị cụ thể: border-radius: 10px; */
   
   cursor: pointer;
   text-align: center; /* Căn giữa chữ */
