@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from bson import ObjectId
 from datetime import datetime, timezone, date
 import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional,Literal
 
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
@@ -14,15 +14,26 @@ from ..models import (
     InterviewQuestionResponse, AnswerPayload, AIFeedbackResponse,
     AnswerWithFeedback, OverallAssessment, Question, QuestionSetInDB,
     InterviewInDB, SpecializedField, SelectFieldPayload, InterviewLifecycleStatus,
-    CandidateInfoPayload, SubmitCandidateInfoResponse, StrengthWeaknessDetail
+    CandidateInfoPayload, SubmitCandidateInfoResponse, StrengthWeaknessDetail,
+    DefaultQuestionSetSettings
 )
-from ..sample_data import (
-    DEFAULT_GENERAL_QSET_ID,
-    DEFAULT_DEVELOPER_QSET_ID,
-    DEFAULT_DESIGNER_QSET_ID
-)
-
 router = APIRouter()
+
+DEFAULT_SETTINGS_ID = "default_question_set_config"
+
+
+async def get_default_qset_id_name_from_config(db: AsyncIOMotorDatabase,
+                                               qset_type: Literal["general", "developer", "designer"]) -> Optional[str]:
+    settings_collection = db.get_collection("settings")
+    config_doc = await settings_collection.find_one({"_id": DEFAULT_SETTINGS_ID})
+    if config_doc:
+        if qset_type == "general":
+            return config_doc.get("default_general_qset_id_name")
+        elif qset_type == "developer":
+            return config_doc.get("default_developer_qset_id_name")
+        elif qset_type == "designer":
+            return config_doc.get("default_designer_qset_id_name")
+    return None
 
 
 @router.post("/submit-candidate-info", response_model=SubmitCandidateInfoResponse)
@@ -36,7 +47,6 @@ async def submit_candidate_info_endpoint(
     candidate_info_to_save = payload.model_dump(exclude_none=True)
     if 'date_of_birth' in candidate_info_to_save and isinstance(candidate_info_to_save['date_of_birth'], date):
         candidate_info_to_save['date_of_birth'] = candidate_info_to_save['date_of_birth'].isoformat()
-
 
     new_interview_data = InterviewInDB(
         candidate_info_raw=candidate_info_to_save,
@@ -99,22 +109,23 @@ async def start_general_phase_endpoint(
                 interview_lifecycle_status=current_interview.lifecycle_status,
             )
 
-    default_general_qset_doc = await question_set_collection.find_one({
-        "is_default_general": True,
-        "field_type": "none"
-    })
+    default_general_qset_id_name = await get_default_qset_id_name_from_config(db, "general")
+    if not default_general_qset_id_name:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Default general question set ID name not configured in settings.")
+
+    default_general_qset_doc = await question_set_collection.find_one(
+        {"id_name": default_general_qset_id_name, "field_type": "none"})
     if not default_general_qset_doc:
-        default_general_qset_doc = await question_set_collection.find_one({"id_name": DEFAULT_GENERAL_QSET_ID})
-        if not default_general_qset_doc:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                detail="Default general question set not configured or available.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Configured default general question set '{default_general_qset_id_name}' not found or not a 'none' type.")
 
     qset_from_db = QuestionSetInDB(**default_general_qset_doc)
     general_questions_snapshot = qset_from_db.questions
 
     if not general_questions_snapshot:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Default general question set has no questions.")
+                            detail=f"Default general question set '{default_general_qset_id_name}' has no questions.")
 
     current_time = datetime.now(timezone.utc)
 
@@ -181,28 +192,25 @@ async def select_field_endpoint(payload: SelectFieldPayload, db: AsyncIOMotorDat
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid field selected. Must be 'developer' or 'designer'.")
 
-    specialized_qset_id_name_map = {
-        "developer": DEFAULT_DEVELOPER_QSET_ID,
-        "designer": DEFAULT_DESIGNER_QSET_ID
-    }
-    specialized_qset_id_name = specialized_qset_id_name_map.get(payload.field)
+    specialized_qset_id_name = await get_default_qset_id_name_from_config(db, payload.field)  # type: ignore
+
     if not specialized_qset_id_name:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="Internal error: Could not map field to question set ID.")
+                            detail=f"Default question set ID name for field '{payload.field}' not configured in settings.")
 
     specialized_qset_doc = await question_set_collection.find_one(
         {"id_name": specialized_qset_id_name, "field_type": payload.field})
 
     if not specialized_qset_doc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Specialized question set '{specialized_qset_id_name}' for '{payload.field}' not found.")
+                            detail=f"Configured default specialized question set '{specialized_qset_id_name}' for '{payload.field}' not found or type mismatch.")
 
     qset_specialized = QuestionSetInDB(**specialized_qset_doc)
     specialized_questions_snapshot = qset_specialized.questions
 
     if not specialized_questions_snapshot:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Specialized question set for '{payload.field}' is empty.")
+                            detail=f"Default specialized question set for '{payload.field}' is empty.")
 
     first_specialized_question = specialized_questions_snapshot[0]
     is_last_specialized = (len(specialized_questions_snapshot) == 1)
@@ -358,7 +366,7 @@ Nhận xét của bạn:"""
                 answers_for_general_transcript = updated_answers_for_current_phase
 
             for i, item in enumerate(answers_for_general_transcript):
-                full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n" # Bỏ ai_feedback_per_answer khỏi transcript chính
+                full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n"
 
             answers_for_specialized_transcript = current_interview.specialized_answers_and_feedback
             if answer_update_field_name == "specialized_answers_and_feedback":
@@ -367,17 +375,17 @@ Nhận xét của bạn:"""
             if answers_for_specialized_transcript:
                 full_transcript += f"Phần câu hỏi chuyên môn ({current_interview.selected_field}):\n"
                 actual_desired_position = desired_position_update if desired_position_update else (
-                            current_interview.desired_position_in_field or "Chưa rõ")
+                        current_interview.desired_position_in_field or "Chưa rõ")
                 full_transcript += f"  Vị trí ứng tuyển mong muốn: {actual_desired_position}\n"
                 for i, item in enumerate(answers_for_specialized_transcript):
-                    full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n" # Bỏ ai_feedback_per_answer
+                    full_transcript += f"  Câu hỏi {i + 1}: {item.question_text}\n  Trả lời: {item.candidate_answer}\n\n"
 
             if app_globals.gemini_model:
                 raw_json_text_from_ai_for_error = "AI response not captured yet for error logging."
                 try:
                     final_assessment_field = current_interview.selected_field if current_interview.selected_field != "none" else "Chung"
                     final_desired_position = desired_position_update if desired_position_update else (
-                                current_interview.desired_position_in_field or "Chưa rõ")
+                            current_interview.desired_position_in_field or "Chưa rõ")
 
                     prompt_for_final_assessment = f"""Bạn là một chuyên gia tuyển dụng AI giàu kinh nghiệm. Nhiệm vụ của bạn là phân tích kỹ lưỡng TOÀN BỘ buổi phỏng vấn dưới đây và đưa ra đánh giá chi tiết, khách quan.
 Buổi phỏng vấn bao gồm:

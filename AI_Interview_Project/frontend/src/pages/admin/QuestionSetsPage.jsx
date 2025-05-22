@@ -1,27 +1,31 @@
-// frontend/src/pages/admin/QuestionSetsPage.jsx
 import React, { useState, useEffect } from 'react';
 import adminApi from '../../services/adminApi';
-import axios from 'axios'; // Import axios để sử dụng axios.isAxiosError
+import axios from 'axios';
+
+const DEFAULT_CONFIG_ID = "default_question_set_config"; // ID cố định cho document config
 
 function QuestionSetsPage() {
   const [questionSets, setQuestionSets] = useState([]);
+  const [defaultConfig, setDefaultConfig] = useState({
+    default_general_qset_id_name: null,
+    default_developer_qset_id_name: null,
+    default_designer_qset_id_name: null,
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false); // Loading riêng cho các hành động (delete, set default, update)
+  const [actionLoading, setActionLoading] = useState(false);
+  const [configLoading, setConfigLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // State cho form Sửa
-  const [editingSet, setEditingSet] = useState(null); // { id_name, name, questionsJson, field_type, is_default_general }
+  const [editingSet, setEditingSet] = useState(null);
   const [editModalIsOpen, setEditModalIsOpen] = useState(false);
 
-  // State cho form Thêm mới
   const [newSetIdName, setNewSetIdName] = useState('');
   const [newSetName, setNewSetName] = useState('');
   const [newSetQuestionsJson, setNewSetQuestionsJson] = useState(
     '[\n  {\n    "text": "Câu hỏi mẫu 1?",\n    "order": 1\n  },\n  {\n    "text": "Câu hỏi mẫu 2?",\n    "order": 2\n  }\n]'
   );
   const [newSetFieldType, setNewSetFieldType] = useState('none');
-  const [newSetIsDefaultGeneral, setNewSetIsDefaultGeneral] = useState(false);
 
   const displaySuccessMessage = (message) => {
     setSuccessMessage(message);
@@ -29,17 +33,15 @@ function QuestionSetsPage() {
   };
   const displayErrorMessage = (message) => {
     setError(message);
-    setTimeout(() => setError(''), 5000); 
+    setTimeout(() => setError(''), 5000);
   };
 
   const fetchQuestionSets = async () => {
     setIsLoading(true);
-    // Giữ lại lỗi cũ nếu có, chỉ xóa khi request thành công hoặc có lỗi mới
-    // setError(''); 
     try {
       const response = await adminApi.get('/admin/question-sets');
       setQuestionSets(response.data);
-      setError(''); // Xóa lỗi nếu tải thành công
+      setError('');
     } catch (err) {
       let errMsg = 'Không thể tải danh sách bộ câu hỏi. ';
       if (axios.isAxiosError(err) && err.response) {
@@ -53,18 +55,33 @@ function QuestionSetsPage() {
     setIsLoading(false);
   };
 
+  const fetchDefaultConfig = async () => {
+    setConfigLoading(true);
+    try {
+      const response = await adminApi.get('/admin/question-sets/default-config');
+      setDefaultConfig(response.data);
+    } catch (err) {
+      let errMsg = 'Không thể tải cấu hình bộ câu hỏi mặc định. ';
+      if (axios.isAxiosError(err) && err.response) {
+         errMsg += err.response.data?.detail || JSON.stringify(err.response.data) || err.message;
+      } else {
+         errMsg += err.message || 'Lỗi không xác định';
+      }
+      displayErrorMessage(errMsg); // Hiển thị lỗi ở message chung, có thể cần vị trí khác
+      console.error("Error fetching default config:", err);
+    }
+    setConfigLoading(false);
+  };
+
+
   useEffect(() => {
     fetchQuestionSets();
+    fetchDefaultConfig();
   }, []);
 
   const handleAddSet = async (e) => {
     e.preventDefault();
-    if (newSetIsDefaultGeneral && newSetFieldType !== 'none') {
-        displayErrorMessage("Bộ câu hỏi mặc định chung phải có loại 'none'.");
-        return;
-    }
-    setActionLoading(true); // Dùng actionLoading cho form submit
-    // setError(''); 
+    setActionLoading(true);
     try {
       const questionsArray = JSON.parse(newSetQuestionsJson);
       const payload = {
@@ -72,7 +89,6 @@ function QuestionSetsPage() {
         name: newSetName.trim(),
         questions: questionsArray,
         field_type: newSetFieldType,
-        is_default_general: newSetIsDefaultGeneral
       };
 
       if (!payload.name) {
@@ -89,9 +105,8 @@ function QuestionSetsPage() {
         '[\n  {\n    "text": "Câu hỏi mẫu 1?",\n    "order": 1\n  },\n  {\n    "text": "Câu hỏi mẫu 2?",\n    "order": 2\n  }\n]'
       );
       setNewSetFieldType('none');
-      setNewSetIsDefaultGeneral(false);
       
-      await fetchQuestionSets(); // Tải lại danh sách
+      await fetchQuestionSets();
       displaySuccessMessage('Thêm bộ câu hỏi thành công!');
     } catch (err) {
       let errMsg = 'Lỗi khi thêm bộ câu hỏi. ';
@@ -109,13 +124,11 @@ function QuestionSetsPage() {
   };
   
   const handleDeleteSet = async (idNameToDelete) => {
-    const qSetToDelete = questionSets.find(qs => qs.id_name === idNameToDelete);
-    if (qSetToDelete && qSetToDelete.is_default_general && qSetToDelete.field_type === 'none') {
-        const defaultGeneralCount = questionSets.filter(qs => qs.is_default_general && qs.field_type === 'none').length;
-        if (defaultGeneralCount <= 1) {
-            displayErrorMessage("Không thể xóa bộ câu hỏi chung mặc định duy nhất. Vui lòng đặt bộ khác làm mặc định trước.");
-            return;
-        }
+    if (defaultConfig.default_general_qset_id_name === idNameToDelete ||
+        defaultConfig.default_developer_qset_id_name === idNameToDelete ||
+        defaultConfig.default_designer_qset_id_name === idNameToDelete) {
+        displayErrorMessage(`Không thể xóa bộ câu hỏi "${idNameToDelete}" vì nó đang được đặt làm mặc định. Vui lòng thay đổi cấu hình mặc định trước.`);
+        return;
     }
 
     if (!window.confirm(`Bạn có chắc chắn muốn xóa bộ câu hỏi "${idNameToDelete}" không? Hành động này không thể hoàn tác.`)) {
@@ -139,46 +152,88 @@ function QuestionSetsPage() {
     setActionLoading(false);
   };
 
-  const handleSetDefaultGeneral = async (idNameToSetDefault) => {
-    const qSet = questionSets.find(qs => qs.id_name === idNameToSetDefault);
+  const handleSetDefault = async (qSetToSetDefault, typeToSet) => {
+    const qSet = questionSets.find(qs => qs.id_name === qSetToSetDefault.id_name);
     if (!qSet) return;
 
-    if (qSet.field_type !== 'none') {
-        displayErrorMessage("Chỉ có thể đặt bộ câu hỏi loại 'Chung/Kỹ năng mềm' làm mặc định.");
+    let typeNameForConfirm = "";
+    let payloadKey = "";
+    let currentDefaultIdName = null;
+
+    if (typeToSet === 'general') {
+        if (qSet.field_type !== 'none') {
+            displayErrorMessage("Chỉ bộ câu hỏi loại 'Chung/Kỹ năng mềm' mới có thể đặt làm mặc định cho mục Chung.");
+            return;
+        }
+        typeNameForConfirm = "Chung";
+        payloadKey = "default_general_qset_id_name";
+        currentDefaultIdName = defaultConfig.default_general_qset_id_name;
+    } else if (typeToSet === 'developer') {
+        if (qSet.field_type !== 'developer') {
+            displayErrorMessage("Chỉ bộ câu hỏi loại 'Developer' mới có thể đặt làm mặc định cho mục Developer.");
+            return;
+        }
+        typeNameForConfirm = "Developer";
+        payloadKey = "default_developer_qset_id_name";
+        currentDefaultIdName = defaultConfig.default_developer_qset_id_name;
+    } else if (typeToSet === 'designer') {
+         if (qSet.field_type !== 'designer') {
+            displayErrorMessage("Chỉ bộ câu hỏi loại 'Designer' mới có thể đặt làm mặc định cho mục Designer.");
+            return;
+        }
+        typeNameForConfirm = "Designer";
+        payloadKey = "default_designer_qset_id_name";
+        currentDefaultIdName = defaultConfig.default_designer_qset_id_name;
+    } else {
+        return; // Should not happen
+    }
+    
+    if (currentDefaultIdName === qSet.id_name) {
+        displaySuccessMessage(`"${qSet.name}" (${qSet.id_name}) đã là bộ câu hỏi mặc định cho mục ${typeNameForConfirm}.`);
         return;
     }
-    if (qSet.is_default_general) {
-        displaySuccessMessage(`"${idNameToSetDefault}" đã là bộ câu hỏi chung mặc định.`);
+
+    if (!window.confirm(`Bạn có muốn đặt bộ câu hỏi "${qSet.name}" (${qSet.id_name}) làm bộ câu hỏi mặc định cho mục ${typeNameForConfirm} không?`)) {
         return;
     }
-    if (!window.confirm(`Bạn có muốn đặt bộ câu hỏi "${qSet.name}" (${idNameToSetDefault}) làm bộ câu hỏi chung mặc định không?`)) {
-        return;
-    }
+
     setActionLoading(true);
     try {
-        await adminApi.post(`/admin/question-sets/${idNameToSetDefault}/set-default-general`);
-        await fetchQuestionSets(); 
-        displaySuccessMessage(`Đã đặt "${idNameToSetDefault}" làm bộ câu hỏi chung mặc định.`);
+        const newConfigPayload = {
+            ...defaultConfig, // giữ lại các config cũ
+            _id: DEFAULT_CONFIG_ID, // Đảm bảo _id được gửi đúng
+            id: DEFAULT_CONFIG_ID, // API có thể mong đợi id hoặc _id, gửi cả hai cho chắc
+            [payloadKey]: qSet.id_name, // cập nhật id_name mới
+        };
+        // Loại bỏ trường không cần thiết mà backend có thể không mong muốn nếu có
+        if(newConfigPayload.updated_at) delete newConfigPayload.updated_at; 
+
+
+        await adminApi.put(`/admin/question-sets/default-config`, newConfigPayload);
+        await fetchDefaultConfig(); // Tải lại config
+        // Không cần fetchQuestionSets() vì danh sách bộ câu hỏi không đổi
+        displaySuccessMessage(`Đã đặt "${qSet.name}" (${qSet.id_name}) làm bộ câu hỏi mặc định cho mục ${typeNameForConfirm}.`);
     } catch (err) {
-        let errMsg = `Lỗi khi đặt bộ câu hỏi "${idNameToSetDefault}" làm mặc định. `;
+        let errMsg = `Lỗi khi đặt bộ câu hỏi "${qSet.name}" làm mặc định. `;
         if (axios.isAxiosError(err) && err.response) {
-            errMsg += err.response.data?.detail || err.message;
+            errMsg += err.response.data?.detail || JSON.stringify(err.response.data) || err.message;
         } else {
             errMsg += err.message || 'Lỗi không xác định.';
         }
         displayErrorMessage(errMsg);
-        console.error("Error setting default general question set:", err);
+        console.error("Error setting default question set:", err);
     }
     setActionLoading(false);
   };
 
+
   const openEditModal = (qSet) => {
     setEditingSet({
-        id_name: qSet.id_name, // Không cho sửa id_name
+        id_name: qSet.id_name,
         name: qSet.name,
         questionsJson: JSON.stringify(qSet.questions, null, 2),
         field_type: qSet.field_type,
-        is_default_general: qSet.is_default_general
+        // is_default_general không còn nữa
     });
     setEditModalIsOpen(true);
   };
@@ -186,21 +241,14 @@ function QuestionSetsPage() {
   const handleUpdateSet = async (e) => {
     e.preventDefault();
     if (!editingSet) return;
-
-    if (editingSet.is_default_general && editingSet.field_type !== 'none') {
-        displayErrorMessage("Khi cập nhật, bộ câu hỏi mặc định chung phải có loại 'none'.");
-        // Hoặc tự động set field_type = 'none' nếu is_default_general là true
-        // setEditingSet(prev => ({...prev, field_type: 'none'})); // Cần user confirm
-        return;
-    }
     setActionLoading(true);
     try {
         const questionsArray = JSON.parse(editingSet.questionsJson);
-        const payload = { // Không gửi id_name trong payload update
+        const payload = { 
             name: editingSet.name.trim(),
             questions: questionsArray,
             field_type: editingSet.field_type,
-            is_default_general: editingSet.is_default_general
+            // is_default_general không còn nữa
         };
         if (!payload.name) {
             displayErrorMessage("Tên bộ câu hỏi không được để trống khi cập nhật.");
@@ -221,9 +269,7 @@ function QuestionSetsPage() {
         } else {
             errMsg += err.message || 'Lỗi không xác định.';
         }
-        // Giữ modal mở và hiển thị lỗi bên trong modal hoặc ngay trên modal
-        // displayErrorMessage(errMsg); // Để hiển thị lỗi ở message chung
-        setEditingSet(prev => ({...prev, modalError: errMsg})); // Hoặc thêm state lỗi cho modal
+        setEditingSet(prev => ({...prev, modalError: errMsg}));
         console.error("Error updating question set:", err);
     }
     setActionLoading(false);
@@ -238,17 +284,26 @@ function QuestionSetsPage() {
     }
   };
 
+  const isDefaultFor = (qSetIdName, type) => {
+    if (!defaultConfig) return false;
+    if (type === 'general') return defaultConfig.default_general_qset_id_name === qSetIdName;
+    if (type === 'developer') return defaultConfig.default_developer_qset_id_name === qSetIdName;
+    if (type === 'designer') return defaultConfig.default_designer_qset_id_name === qSetIdName;
+    return false;
+  };
+
+
   return (
     <div>
       <h1>Quản lý Bộ Câu Hỏi</h1>
       {error && <p className="error-message admin-message-box admin-message-error">{error}</p>}
       {successMessage && <p className="success-message admin-message-box admin-message-success">{successMessage}</p>}
 
-      <div className="admin-section-card"> {/* Bọc form thêm mới trong card */}
+      <div className="admin-section-card">
         <h2>Thêm Bộ Câu Hỏi Mới</h2>
         <form onSubmit={handleAddSet}>
             <div className="admin-form-group">
-            <label htmlFor="newSetIdName">ID định danh (tùy chọn, nếu bỏ trống sẽ tự sinh):</label>
+            <label htmlFor="newSetIdName">ID định danh (tùy chọn, nếu bỏ trống sẽ tự sinh theo loại):</label>
             <input type="text" id="newSetIdName" value={newSetIdName} onChange={(e) => setNewSetIdName(e.target.value)} placeholder="Ví dụ: soft_skills_v2"/>
             </div>
             <div className="admin-form-group">
@@ -263,27 +318,24 @@ function QuestionSetsPage() {
                     <option value="designer">Designer</option>
                 </select>
             </div>
-            <div className="admin-form-group admin-form-checkbox-group">
-                <input type="checkbox" id="newSetIsDefaultGeneral" checked={newSetIsDefaultGeneral} onChange={(e) => setNewSetIsDefaultGeneral(e.target.checked)} />
-                <label htmlFor="newSetIsDefaultGeneral">Đặt làm bộ câu hỏi chung mặc định khi bắt đầu phỏng vấn?</label>
-            </div>
             <div className="admin-form-group">
             <label htmlFor="newSetQuestionsJson">Các câu hỏi (định dạng JSON):</label>
             <textarea id="newSetQuestionsJson" value={newSetQuestionsJson} onChange={(e) => setNewSetQuestionsJson(e.target.value)} rows={8} style={{ fontFamily: 'monospace', fontSize: '0.9em' }} required placeholder='[{"text": "Câu hỏi 1?", "order": 1}]'/>
             <small>Mỗi câu hỏi: {"{\"text\": \"Nội dung?\", \"order\": 1 }"}</small>
             </div>
             <button type="submit" disabled={actionLoading} className="admin-button">
-            {actionLoading && (isLoading || newSetIdName) ? 'Đang xử lý...' : 'Thêm Mới Bộ Câu Hỏi'}
+            {actionLoading ? 'Đang xử lý...' : 'Thêm Mới Bộ Câu Hỏi'}
             </button>
         </form>
       </div>
 
-      <div className="admin-section-card" style={{marginTop: '30px'}}> {/* Bọc danh sách trong card */}
+      <div className="admin-section-card" style={{marginTop: '30px'}}>
         <h2>Danh sách Các Bộ Câu Hỏi Hiện Có</h2>
         {isLoading && !questionSets.length && <p>Đang tải danh sách...</p>}
         {!isLoading && questionSets.length === 0 && !error && <p>Chưa có bộ câu hỏi nào trong hệ thống.</p>}
+        {configLoading && <p>Đang tải cấu hình mặc định...</p>}
         
-        {!isLoading && questionSets.length > 0 && (
+        {!isLoading && questionSets.length > 0 && !configLoading && (
             <div style={{ overflowX: 'auto' }}>
                 <table className="admin-table">
                     <thead>
@@ -292,8 +344,8 @@ function QuestionSetsPage() {
                             <th>Tên</th>
                             <th>Loại</th>
                             <th>Số câu</th>
-                            <th>Mặc định chung?</th>
-                            <th style={{minWidth: '220px'}}>Hành động</th>
+                            <th>Đặt làm mặc định</th>
+                            <th style={{minWidth: '180px'}}>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -304,19 +356,38 @@ function QuestionSetsPage() {
                             <td>{getFieldTypeName(qSet.field_type)}</td>
                             <td>{qSet.questions ? qSet.questions.length : 0}</td>
                             <td>
-                                {qSet.is_default_general ? 
-                                    (<span style={{color: 'var(--admin-nav-link-active-bg)', fontWeight: 'bold'}}>Có ✓</span>) : 
-                                    (qSet.field_type === 'none' ? 
-                                        (<button onClick={() => handleSetDefaultGeneral(qSet.id_name)} disabled={actionLoading} className="admin-button admin-button-small admin-button-outline">
-                                            Đặt làm mặc định
-                                        </button>) 
-                                        : 'Không')}
+                                {qSet.field_type === 'none' && (
+                                    isDefaultFor(qSet.id_name, 'general') ? 
+                                    (<span className="default-badge">Mặc định Chung ✓</span>) :
+                                    (<button onClick={() => handleSetDefault(qSet, 'general')} disabled={actionLoading} className="admin-button admin-button-small admin-button-outline">
+                                        Cho Chung
+                                    </button>)
+                                )}
+                                {qSet.field_type === 'developer' && (
+                                    isDefaultFor(qSet.id_name, 'developer') ? 
+                                    (<span className="default-badge">Mặc định Dev ✓</span>) :
+                                    (<button onClick={() => handleSetDefault(qSet, 'developer')} disabled={actionLoading} className="admin-button admin-button-small admin-button-outline">
+                                        Cho Dev
+                                    </button>)
+                                )}
+                                {qSet.field_type === 'designer' && (
+                                    isDefaultFor(qSet.id_name, 'designer') ?
+                                    (<span className="default-badge">Mặc định Design ✓</span>) :
+                                    (<button onClick={() => handleSetDefault(qSet, 'designer')} disabled={actionLoading} className="admin-button admin-button-small admin-button-outline">
+                                        Cho Design
+                                    </button>)
+                                )}
                             </td>
                             <td>
                                 <button onClick={() => openEditModal(qSet)} disabled={actionLoading} className="admin-button admin-button-small" style={{marginRight: '8px'}}>
                                     Sửa
                                 </button>
-                                <button onClick={() => handleDeleteSet(qSet.id_name)} disabled={actionLoading || (qSet.is_default_general && questionSets.filter(qs => qs.is_default_general && qs.field_type === 'none').length <=1) } className="admin-button admin-button-small admin-button-danger">
+                                <button 
+                                    onClick={() => handleDeleteSet(qSet.id_name)} 
+                                    disabled={actionLoading || isDefaultFor(qSet.id_name, 'general') || isDefaultFor(qSet.id_name, 'developer') || isDefaultFor(qSet.id_name, 'designer')} 
+                                    className="admin-button admin-button-small admin-button-danger"
+                                    title={ (isDefaultFor(qSet.id_name, 'general') || isDefaultFor(qSet.id_name, 'developer') || isDefaultFor(qSet.id_name, 'designer')) ? "Không thể xóa bộ câu hỏi đang làm mặc định" : "Xóa bộ câu hỏi"}
+                                >
                                     Xóa
                                 </button>
                             </td>
@@ -329,8 +400,8 @@ function QuestionSetsPage() {
       </div>
 
         {editModalIsOpen && editingSet && (
-            <div className="admin-modal-overlay" onClick={() => setEditModalIsOpen(false) /* Đóng khi click overlay */}>
-                <div className="admin-modal-content" onClick={(e) => e.stopPropagation() /* Ngăn đóng khi click content */}>
+            <div className="admin-modal-overlay" onClick={() => setEditModalIsOpen(false)}>
+                <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
                     <h2>Sửa Bộ Câu Hỏi: <span style={{fontWeight: 'normal'}}>{editingSet.id_name}</span></h2>
                     {editingSet.modalError && <p className="error-message admin-message-box admin-message-error">{editingSet.modalError}</p>}
                     <form onSubmit={handleUpdateSet}>
@@ -347,11 +418,6 @@ function QuestionSetsPage() {
                                 <option value="developer">Developer</option>
                                 <option value="designer">Designer</option>
                             </select>
-                        </div>
-                        <div className="admin-form-group admin-form-checkbox-group">
-                            <input type="checkbox" id="editSetIsDefaultGeneral" checked={editingSet.is_default_general} 
-                                   onChange={(e) => setEditingSet({...editingSet, is_default_general: e.target.checked, modalError: ''})} />
-                            <label htmlFor="editSetIsDefaultGeneral">Là bộ câu hỏi chung mặc định?</label>
                         </div>
                         <div className="admin-form-group">
                             <label htmlFor="editSetQuestionsJson">Các câu hỏi (JSON):</label>

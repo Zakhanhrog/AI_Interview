@@ -35,7 +35,6 @@ class QuestionSetBase(BaseModel):
     questions: List[Question] = []
     field_type: SpecializedField = Field(default="none",
                                          description="Loại bộ câu hỏi: none (chung), developer, designer")
-    is_default_general: bool = Field(default=False, description="Đây có phải bộ câu hỏi chung mặc định không?")
 
 
 class QuestionSetCreate(QuestionSetBase):
@@ -66,7 +65,6 @@ class QuestionSetPublic(BaseModel):
     name: str
     questions: List[Question]
     field_type: SpecializedField
-    is_default_general: bool
     created_at: datetime
     updated_at: datetime
 
@@ -214,3 +212,42 @@ class Token(BaseModel):
 class SubmitCandidateInfoResponse(BaseModel):
     interview_id: str
     message: str
+
+class DefaultQuestionSetSettings(BaseModel):
+    id: str = Field(alias="_id", default="default_question_set_config")
+    default_general_qset_id_name: Optional[str] = None
+    default_developer_qset_id_name: Optional[str] = None
+    default_designer_qset_id_name: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    class Config:
+        populate_by_name = True
+        json_encoders = {datetime: lambda dt: dt.isoformat()}
+        from_attributes = True
+        allow_population_by_field_name = True
+
+
+class AdminUserBase(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    nickname: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class AdminUserCreate(AdminUserBase):
+    password: str
+
+class AdminUserUpdate(BaseModel): # Model này có thể không cần thiết nếu bạn không cho update user qua API
+    password: Optional[str] = None
+    full_name: Optional[str] = None
+    nickname: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class AdminUser(AdminUserBase): # Model để trả về thông tin admin, không có password
+    class Config:
+        from_attributes = True
+
+class AdminUserInDB(AdminUserBase): # Model đại diện admin trong DB (nếu bạn lưu vào DB)
+    hashed_password: str
+    # Thêm các trường khác nếu admin được lưu trong DB và có nhiều thông tin hơn
+    class Config:
+        from_attributes = True

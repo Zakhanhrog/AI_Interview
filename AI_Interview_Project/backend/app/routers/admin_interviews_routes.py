@@ -71,10 +71,9 @@ async def get_interview_by_id(interview_db_id: str, db: AsyncIOMotorDatabase = D
 
     try:
         interview_instance = InterviewInDB(**interview_doc)
-        # SỬA Ở ĐÂY: Đảm bảo candidate_info_raw được truyền vào
         public_representation = InterviewPublic(
             id=str(interview_doc["_id"]),
-            candidate_info_raw=interview_instance.candidate_info_raw, # <--- THÊM DÒNG NÀY
+            candidate_info_raw=interview_instance.candidate_info_raw,
             lifecycle_status=interview_instance.lifecycle_status,
             selected_field=interview_instance.selected_field,
             desired_position_in_field=interview_instance.desired_position_in_field,

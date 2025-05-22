@@ -1,166 +1,285 @@
-/* frontend/src/pages/admin/AdminLayout.css */
-/* Chỉ style cho layout chính. Các style chung khác đã ở AdminGlobal.css */
-
 .admin-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   font-family: 'Poppins', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--admin-bg-main);
+}
+
+.admin-main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 60px;
+  background-color: var(--admin-nav-bg);
+  color: var(--admin-nav-text-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+}
+
+.admin-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--admin-nav-text-color);
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 10px;
+}
+.admin-menu-toggle .material-icons {
+  font-size: 28px;
+}
+
+.admin-header-title-area {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+.admin-header-title-area h2 {
+  margin: 0;
+  font-size: 1.3em;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+
+.admin-user-info-container {
+  position: relative;
+}
+
+.admin-user-button {
+  background: none;
+  border: none;
+  color: var(--admin-nav-text-color);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+.admin-user-button:hover,
+.admin-user-button:focus {
+  background-color: var(--admin-nav-link-hover-bg);
+}
+.admin-user-avatar-icon {
+  font-size: 22px !important;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.admin-user-greeting {
+    vertical-align: middle;
+}
+.admin-user-dropdown-icon {
+  margin-left: 4px;
+  vertical-align: middle;
+  font-size: 20px !important;
+}
+
+.admin-user-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  width: 230px;
+  z-index: 1005;
+  display: flex;
+  flex-direction: column;
+}
+.dropdown-item-info {
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+}
+.dropdown-item-info strong {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+.dropdown-item-info small {
+  font-size: 0.8rem;
+  color: var(--admin-text-secondary);
+  word-break: break-all;
+}
+.dropdown-divider {
+  border: none;
+  border-top: 1px solid var(--admin-border-color);
+  margin: 8px 0;
+}
+.dropdown-item-action {
+  background: none;
+  border: none;
+  color: var(--admin-text-primary);
+  padding: 10px 15px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+.dropdown-item-action:hover {
+  background-color: var(--admin-hover-bg);
+}
+.dropdown-item-action .material-icons {
+  margin-right: 10px;
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+
+.admin-content-body {
+  display: flex;
+  flex-grow: 1;
+  margin-top: 60px;
+  height: calc(100vh - 60px); /* Quan trọng: Đảm bảo body có chiều cao để overflow hoạt động */
+  overflow: hidden; /* Ngăn body tự scroll, để content-wrapper scroll */
 }
 
 .admin-nav {
   width: 250px;
   background-color: var(--admin-nav-bg);
   color: var(--admin-nav-text-color);
-  padding: 20px 0;
-  box-shadow: 3px 0 10px -2px rgba(0, 0, 0, 0.1); /* Shadow nhẹ hơn, tinh tế hơn */
+  box-shadow: 2px 0 8px -2px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh; 
+  /* position: fixed; không cần fixed nữa nếu admin-content-body là flex container */
+  /* left: 0; */
+  /* top: 60px; */
+  /* bottom: 0; */
+  height: 100%; /* Chiếm toàn bộ chiều cao của admin-content-body */
   z-index: 1000;
   overflow-y: auto; 
 }
 
-.admin-nav-header {
-  padding: 0 20px 20px 20px;
-  text-align: center;
-  border-bottom: 1px solid var(--admin-nav-link-hover-bg);
+.admin-nav-header-placeholder {
+  height: 20px;
 }
 
-.admin-nav-header h2 {
-  margin: 0;
-  font-size: 1.4em; /* Nhỏ hơn chút */
-  color: #ffffff;
-  font-weight: 500;
-  padding-top: 5px; /* Cho tiêu đề cách top nav 1 chút */
-}
 
 .admin-nav ul {
   list-style: none;
   padding: 0;
-  margin: 10px 0; /* Giảm margin */
+  margin: 0;
   flex-grow: 1;
 }
 
-.admin-nav a, 
-.admin-nav .nav-link-button { /* Style cho Link và các button có vai trò như link */
+.admin-nav .admin-nav-item { 
   display: flex;
   align-items: center;
-  padding: 12px 20px; /* Giảm padding link */
+  padding: 12px 20px;
   text-decoration: none;
   color: var(--admin-nav-text-color);
-  font-size: 0.9rem; /* Chữ trong nav nhỏ hơn */
-  transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease; /* Thêm transition cho border */
-  border-left: 4px solid transparent; /* Dày hơn chút */
-  margin-left: -1px; /* Để border ăn ra ngoài 1px, nhìn đẹp hơn khi active */
+  font-size: 0.9rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
+  border-left: 4px solid transparent;
+  margin-left: -1px;
 }
-.admin-nav a:hover:not(.active),
-.admin-nav .nav-link-button:hover:not(:disabled) {
+.admin-nav .admin-nav-item:hover:not(.active) {
   background-color: var(--admin-nav-link-hover-bg);
   color: var(--admin-nav-text-hover-color);
-  border-left-color: var(--admin-nav-link-hover-bg); /* Để không bị lộ transparent khi hover */
+  border-left-color: var(--admin-nav-link-hover-bg);
 }
-.admin-nav a.active {
+.admin-nav .admin-nav-item.active {
   background-color: var(--admin-nav-link-active-bg);
   color: var(--admin-nav-link-active-text);
   font-weight: 500;
-  border-left-color: #ecf0f1; /* Màu trắng sáng hơn cho border active */
+  border-left-color: #ecf0f1;
 }
-.admin-nav a .material-icons,
-.admin-nav .nav-link-button .material-icons {
-  margin-right: 10px; /* Giảm khoảng cách icon */
-  font-size: 1.1em; /* Icon nhỏ hơn */
-  min-width: 24px; /* Đảm bảo icon có không gian */
-}
-.admin-nav a .link-text, /* Class này phải được thêm vào <span> text trong AdminLayout.jsx */
-.admin-nav .nav-link-button .link-text {
-    /* CSS cho responsive sẽ ẩn text này */
+.admin-nav .admin-nav-item .material-icons {
+  margin-right: 12px;
+  font-size: 1.2em; 
+  min-width: 24px;
 }
 
 .admin-nav-footer {
   padding: 15px 20px;
   border-top: 1px solid var(--admin-nav-link-hover-bg);
 }
-/* Nút logout sẽ kế thừa từ .admin-button và .admin-button-danger trong AdminGlobal.css */
-.admin-nav .logout-button {
-  width: 100%;
-  /* Kế thừa .admin-button .admin-button-danger */
+.admin-nav-footer .nav-link-button {
+    padding: 10px 15px;
+    border-left: 4px solid transparent;
+    margin-left: -1px;
 }
-.admin-nav .logout-button .material-icons {
-  vertical-align: middle; /* Căn giữa icon tốt hơn */
+.admin-nav-footer .nav-link-button:hover {
+    background-color: var(--admin-nav-link-hover-bg);
+    color: var(--admin-nav-text-hover-color);
 }
+
 
 .admin-content-wrapper {
   flex-grow: 1;
-  margin-left: 250px;
-  height: 100vh;
-  overflow-y: auto;
-  position: relative;
-  background-color: var(--admin-bg-main); 
+  /* margin-left: 250px;  Không cần margin-left nếu admin-nav không fixed nữa */
+  overflow-y: auto; /* Đây là nơi scroll chính */
+  position: relative; /* Giữ lại để các phần tử con absolute có thể định vị */
+  height: 100%; /* Chiếm toàn bộ chiều cao của admin-content-body */
 }
 
 .admin-content-container {
-  padding: 20px 25px; /* Giảm padding */
+  padding: 25px 30px;
   box-sizing: border-box;
-  /* Tiêu đề H1, H2 chung đã chuyển vào AdminGlobal.css nếu muốn nhất quán
-     hoặc để từng trang tự định nghĩa nếu muốn linh hoạt */
+  min-height: 100%; /* Đảm bảo container có chiều cao tối thiểu để thấy được nếu nội dung ít */
 }
-/* Các style cho H1, H2 trong admin-content-container sẽ được style bởi chính các page component */
 
 
-/* Responsive */
 @media (max-width: 992px) {
-  .admin-nav { width: 65px; padding-top: 15px;} /* Nav hẹp hơn, padding top ít hơn */
-  .admin-nav-header h2 { display: none; }
-  .admin-nav-header { border-bottom: none; padding-bottom: 10px;}
-  .admin-nav a .link-text,
-  .admin-nav .nav-link-button .link-text { display: none; }
-  .admin-nav a,
-  .admin-nav .nav-link-button { 
+  .admin-main-header .admin-header-title-area h2 {
+     font-size: 1.15em;
+  }
+  .admin-nav { 
+    width: 70px;
+  }
+  .admin-nav-header-placeholder { display: none; }
+  
+  .admin-nav .admin-nav-item .link-text { display: none; }
+  .admin-nav .admin-nav-item { 
     justify-content: center; 
-    padding: 12px 0; /* Padding icon nhỏ hơn */
-    border-left-width: 3px; /* Border mảnh hơn khi thu nhỏ */
+    padding: 14px 0;
+    border-left-width: 3px;
   }
-  .admin-nav a .material-icons,
-  .admin-nav .nav-link-button .material-icons { 
+  .admin-nav .admin-nav-item .material-icons { 
     margin-right: 0; 
-    font-size: 1.4em; /* Icon to hơn chút khi nav hẹp */
+    font-size: 1.5em;
   }
-  .admin-nav .logout-button { padding: 10px 0; } /* Nút logout cũng chỉ còn icon */
-  .admin-nav .logout-button .link-text { display: none; }
-  .admin-nav .logout-button .material-icons { margin-right: 0; }
-  .admin-content-wrapper { margin-left: 65px; }
-  .admin-content-container { padding: 15px 20px; }
+  .admin-nav-footer .link-text { display: none; }
+  .admin-nav-footer .nav-link-button { justify-content: center; padding: 14px 0;}
+  .admin-nav-footer .nav-link-button .material-icons { margin-right: 0; font-size: 1.5em; }
+
+  /* .admin-content-wrapper { margin-left: 70px; } Không cần nữa */
+  .admin-content-container { padding: 20px 25px; }
 }
 
 @media (max-width: 768px) {
-  .admin-nav { 
-    transform: translateX(-100%); 
-    box-shadow: 5px 0 15px rgba(0,0,0,0.2); /* Shadow rõ hơn khi là drawer */
-  }
-  .admin-nav.open { transform: translateX(0); }
-  .admin-content-wrapper { margin-left: 0; }
-  /* Cần JavaScript để toggle class .open cho .admin-nav và hiện nút .admin-menu-toggle */
   .admin-menu-toggle { 
-    display: inline-flex; /* Hiện trên mobile */
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1001; 
-    background-color: var(--admin-nav-bg);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    cursor: pointer;
+    display: inline-flex; 
   }
-  .admin-menu-toggle .material-icons { font-size: 24px; }
+  .admin-nav { 
+    position: fixed; /* Quay lại fixed cho mobile drawer */
+    left: 0;
+    top: 60px; 
+    height: calc(100vh - 60px);
+    transform: translateX(-100%); 
+    box-shadow: 3px 0 10px rgba(0,0,0,0.15);
+    z-index: 999; 
+  }
+  .admin-nav.open { 
+    transform: translateX(0); 
+    z-index: 1000; 
+  }
+  /* .admin-content-wrapper { margin-left: 0; } Không cần nữa */
+  .admin-header-title-area { margin-left: 5px; }
 }
-.admin-menu-toggle { display: none; } /* Ẩn trên desktop */
