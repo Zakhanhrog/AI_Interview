@@ -403,111 +403,139 @@ function App() {
   }
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <h2>{t('chatTitle', currentLang)}</h2>
-        {(isInterviewFinished || (interviewLifecycleStatus === 'completed')) && (
-          <button onClick={handleRestartInterview} disabled={isLoading && isInitialLoading}>
-            {t('startNewInterviewButton', currentLang)}
-          </button>
-        )}
-      </div>
-
-      <div className="messages-area" aria-live="polite" aria-atomic="false">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message ${msg.type} ${msg.appeared ? 'message-appeared' : ''}`}>
-            <p>
-              {msg.type === 'question' && <strong>{t('questionPrefix', currentLang)}</strong>}
-              {msg.type === 'answer' && <strong>{t('answerPrefix', currentLang)}</strong>}
-              {msg.type === 'feedback' && <strong>{t('aiFeedbackPrefix', currentLang)}</strong>}
-              {msg.type === 'info' && <strong>{t('infoPrefix', currentLang)}</strong>}
-              {msg.type === 'error' && <strong>{t('errorPrefix', currentLang)}</strong>}
-              {msg.text}
-            </p>
-          </div>
-        ))}
-        {isInterviewFinished && finalAssessment && (
-          <div className="final-assessment">
-            <h3>{t('finalAssessmentTitle', currentLang)}</h3>
-            <p><strong>{t('statusLabel', currentLang)}</strong> {finalAssessment.status || t('statusNotAvailable', currentLang)}</p>
-            {finalAssessment.suitability_for_field && <p><strong>{t('suitabilityForFieldLabel', currentLang)}</strong> {finalAssessment.suitability_for_field}</p>}
-            {finalAssessment.suggested_positions && finalAssessment.suggested_positions.length > 0 && (
-              <div>
-                <strong>{t('suggestedPositionsLabel', currentLang)}</strong>
-                <ul>{finalAssessment.suggested_positions.map((pos, i) => <li key={`pos-${i}`}>{pos}</li>)}</ul>
-              </div>
-            )}
-            {finalAssessment.strengths && finalAssessment.strengths.length > 0 && (
-              <div>
-                <strong>{t('strengthsLabel', currentLang)}</strong>
-                <ul>{finalAssessment.strengths.map((s, i) => <li key={`s-${i}`}>{s}</li>)}</ul>
-              </div>
-            )}
-            {finalAssessment.weaknesses && finalAssessment.weaknesses.length > 0 && (
-              <div>
-                <strong>{t('weaknessesLabel', currentLang)}</strong>
-                <ul>{finalAssessment.weaknesses.map((w, i) => <li key={`w-${i}`}>{w}</li>)}</ul>
-              </div>
-            )}
-            {finalAssessment.status && !finalAssessment.status.toLowerCase().includes("đạt") && finalAssessment.suggestions_if_not_pass && (
-              <p><strong>{t('suggestionsLabel', currentLang)}</strong> {finalAssessment.suggestions_if_not_pass}</p>
-            )}
-            {finalAssessment.raw_ai_summary_text && (
-                <details>
-                    <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
-                    <pre>{finalAssessment.raw_ai_summary_text}</pre>
-                </details>
-            )}
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+    <>
+      {/* Decorative elements for sides of the interview container */}
+      <div className="decorative-elements">
+        {/* Left side decorative elements */}
+        <div className="decorative-element decorative-element-1"></div>
+        <div className="decorative-element decorative-element-2"></div>
+        <div className="decorative-element decorative-element-3"></div>
+        
+        {/* Right side decorative elements */}
+        <div className="decorative-element decorative-element-4"></div>
+        <div className="decorative-element decorative-element-5"></div>
+        <div className="decorative-element decorative-element-6"></div>
+        
+        {/* Accent lines */}
+        <div className="accent-line accent-line-left"></div>
+        <div className="accent-line accent-line-right"></div>
+        
+        {/* Decorative shapes */}
+        <div className="decorative-shape decorative-square"></div>
+        <div className="decorative-shape decorative-circle"></div>
+        <div className="decorative-shape decorative-diamond"></div>
+        
+        {/* Quotation marks for interview theme */}
+        <div className="quote-mark quote-open">"</div>
+        <div className="quote-mark quote-close">"</div>
       </div>
       
-      {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (
-          <div className="specialization-choice-area input-area">
-            <p style={{textAlign: 'center', margin: '5px 0 10px', color: 'var(--text-primary-color)', width: '100%'}}>{t('chooseYourFieldPrompt', currentLang)}</p> 
-            {fieldsToChoose.map(field => (
-                <button 
-                    key={field} 
-                    onClick={() => handleSelectField(field)}
-                    disabled={isLoading}
-                    className="field-choice-button"
-                >
-                    {field === 'developer' ? t('developerField', currentLang) : t('designerField', currentLang)} 
-                </button>
-            ))}
-          </div>
-      )}
-
-      {(interviewLifecycleStatus === 'general_in_progress' || interviewLifecycleStatus === 'specialized_in_progress') && !isInterviewFinished && currentQuestion && (
-        <div className="input-area">
-          <textarea
-            ref={textareaRef}
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder={t('inputPlaceholder', currentLang)}
-            rows={1}
-            disabled={isLoading}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmitAnswer();
-              }
-            }}
-          />
-          <button 
-            onClick={handleSubmitAnswer} 
-            disabled={isLoading || !userInput.trim()}
-            className={isLoading ? 'button-loading' : ''}
-            aria-label={isLoading ? t('sendingButtonLabel', currentLang) : t('sendButtonLabel', currentLang)}
-          >
-            <span className="button-text">{t('sendButtonLabel', currentLang)}</span>
-            <span className="button-icon material-icons">send</span>
-            <span className="button-spinner"></span>
-          </button>
+      <div className="chat-container">
+        <div className="chat-header">
+          <h2>{t('chatTitle', currentLang)}</h2>
+          {(isInterviewFinished || (interviewLifecycleStatus === 'completed')) && (
+            <button onClick={handleRestartInterview} disabled={isLoading && isInitialLoading}>
+              {t('startNewInterviewButton', currentLang)}
+            </button>
+          )}
         </div>
-      )}
-    </div>
+
+        <div className="messages-area" aria-live="polite" aria-atomic="false">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`message ${msg.type} ${msg.appeared ? 'message-appeared' : ''}`}>
+              <p>
+                {msg.type === 'question' && <strong>{t('questionPrefix', currentLang)}</strong>}
+                {msg.type === 'answer' && <strong>{t('answerPrefix', currentLang)}</strong>}
+                {msg.type === 'feedback' && <strong>{t('aiFeedbackPrefix', currentLang)}</strong>}
+                {msg.type === 'info' && <strong>{t('infoPrefix', currentLang)}</strong>}
+                {msg.type === 'error' && <strong>{t('errorPrefix', currentLang)}</strong>}
+                {msg.text}
+              </p>
+            </div>
+          ))}
+          {isInterviewFinished && finalAssessment && (
+            <div className="final-assessment">
+              <h3>{t('finalAssessmentTitle', currentLang)}</h3>
+              <p><strong>{t('statusLabel', currentLang)}</strong> {finalAssessment.status || t('statusNotAvailable', currentLang)}</p>
+              {finalAssessment.suitability_for_field && <p><strong>{t('suitabilityForFieldLabel', currentLang)}</strong> {finalAssessment.suitability_for_field}</p>}
+              {finalAssessment.suggested_positions && finalAssessment.suggested_positions.length > 0 && (
+                <div>
+                  <strong>{t('suggestedPositionsLabel', currentLang)}</strong>
+                  <ul>{finalAssessment.suggested_positions.map((pos, i) => <li key={`pos-${i}`}>{pos}</li>)}</ul>
+                </div>
+              )}
+              {finalAssessment.strengths && finalAssessment.strengths.length > 0 && (
+                <div>
+                  <strong>{t('strengthsLabel', currentLang)}</strong>
+                  <ul>{finalAssessment.strengths.map((s, i) => <li key={`s-${i}`}>{s}</li>)}</ul>
+                </div>
+              )}
+              {finalAssessment.weaknesses && finalAssessment.weaknesses.length > 0 && (
+                <div>
+                  <strong>{t('weaknessesLabel', currentLang)}</strong>
+                  <ul>{finalAssessment.weaknesses.map((w, i) => <li key={`w-${i}`}>{w}</li>)}</ul>
+                </div>
+              )}
+              {finalAssessment.status && !finalAssessment.status.toLowerCase().includes("đạt") && finalAssessment.suggestions_if_not_pass && (
+                <p><strong>{t('suggestionsLabel', currentLang)}</strong> {finalAssessment.suggestions_if_not_pass}</p>
+              )}
+              {finalAssessment.raw_ai_summary_text && (
+                  <details>
+                      <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
+                      <pre>{finalAssessment.raw_ai_summary_text}</pre>
+                  </details>
+              )}
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (
+            <div className="specialization-choice-area input-area">
+              <p style={{textAlign: 'center', margin: '5px 0 10px', color: 'var(--text-primary-color)', width: '100%'}}>{t('chooseYourFieldPrompt', currentLang)}</p> 
+              {fieldsToChoose.map(field => (
+                  <button 
+                      key={field} 
+                      onClick={() => handleSelectField(field)}
+                      disabled={isLoading}
+                      className="field-choice-button"
+                  >
+                      {field === 'developer' ? t('developerField', currentLang) : t('designerField', currentLang)} 
+                  </button>
+              ))}
+            </div>
+        )}
+
+        {(interviewLifecycleStatus === 'general_in_progress' || interviewLifecycleStatus === 'specialized_in_progress') && !isInterviewFinished && currentQuestion && (
+          <div className="input-area">
+            <textarea
+              ref={textareaRef}
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder={t('inputPlaceholder', currentLang)}
+              rows={1}
+              disabled={isLoading}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmitAnswer();
+                }
+              }}
+            />
+            <button 
+              onClick={handleSubmitAnswer} 
+              disabled={isLoading || !userInput.trim()}
+              className={isLoading ? 'button-loading' : ''}
+              aria-label={isLoading ? t('sendingButtonLabel', currentLang) : t('sendButtonLabel', currentLang)}
+            >
+              <span className="button-text">{t('sendButtonLabel', currentLang)}</span>
+              <span className="button-icon material-icons">send</span>
+              <span className="button-spinner"></span>
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
