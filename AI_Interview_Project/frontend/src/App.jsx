@@ -489,17 +489,17 @@ function App() {
               )}
               
               {finalAssessment.status && !finalAssessment.status.toLowerCase().includes("đạt") && finalAssessment.suggestions_if_not_pass && (
-                 <div className="assessment-section">
-                    <h4>{t('suggestionsLabel', currentLang)}</h4>
-                    <p>{finalAssessment.suggestions_if_not_pass}</p>
-                 </div>
+                <div className="assessment-section">
+                  <h4>{t('suggestionsLabel', currentLang)}</h4>
+                  <p>{finalAssessment.suggestions_if_not_pass}</p>
+                </div>
               )}
 
               {finalAssessment.raw_ai_summary_text && (
-                  <details className="raw-ai-details">
-                      <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
-                      <pre className="raw-ai-pre">{finalAssessment.raw_ai_summary_text}</pre>
-                  </details>
+                <details className="raw-ai-details">
+                  <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
+                  <pre className="raw-ai-pre">{finalAssessment.raw_ai_summary_text}</pre>
+                </details>
               )}
             </div>
           )}

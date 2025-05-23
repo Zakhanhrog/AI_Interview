@@ -576,6 +576,9 @@ body::after {
   color: var(--text-primary-color);
   position: relative;
   overflow: hidden;
+  width: calc(100% - 50px); /* Ensure proper width within container */
+  align-self: center; /* Center the assessment box */
+  max-width: 800px; /* Limit maximum width */
 }
 
 /* Add a subtle gradient decoration to the assessment box */
@@ -607,16 +610,19 @@ body::after {
   font-weight: 700;
   letter-spacing: 0.5px;
   position: relative;
+  text-align: center; /* Center the title */
+  font-family: var(--font-primary); /* Ensure font consistency */
 }
 
 .final-assessment h3::after {
   content: '';
   position: absolute;
   bottom: -2px;
-  left: 0;
-  width: 80px;
+  left: 50%; /* Center the decoration */
+  transform: translateX(-50%); /* Center the decoration */
+  width: 120px;
   height: 2px;
-  background: linear-gradient(90deg, var(--input-focus-border-color), transparent);
+  background: linear-gradient(90deg, transparent, var(--input-focus-border-color), transparent);
 }
 
 .final-assessment p, .final-assessment li {
@@ -677,7 +683,6 @@ body::after {
   display: flex;
   align-items: center;
   font-size: 1rem;
-  user-select: none;
 }
 
 .final-assessment summary:hover {
@@ -1049,8 +1054,14 @@ body::after {
   .final-assessment {
     margin: 18px;
     padding: 25px;
+    width: calc(100% - 36px);
   }
   .final-assessment h3 { font-size: 1.35em; }
+  .final-assessment h3::after {
+    left: 0;
+    transform: none;
+    width: 80px;
+  }
   .final-assessment p, .final-assessment li { font-size: 0.95rem; }
   .final-assessment pre { font-size: 0.85rem; max-height: 280px; }
 }
