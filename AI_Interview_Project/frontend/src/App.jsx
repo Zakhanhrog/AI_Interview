@@ -435,7 +435,7 @@ function App() {
             </div>
           ))}
           {isInterviewFinished && finalAssessment && (
-            <div className="final-assessment" id="finalAssessment">
+            <div className="final-assessment">
               <h3>{t('finalAssessmentTitle', currentLang)}</h3>
               
               {finalAssessment.overall_summary_comment && (
@@ -445,7 +445,12 @@ function App() {
                 </div>
               )}
 
-              <p className="status-line"><strong>{t('statusLabel', currentLang)}</strong> <span className={`status-badge status-${finalAssessment.status?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`}>{finalAssessment.status || t('statusNotAvailable', currentLang)}</span></p>
+              <p className="status-line">
+                <strong>{t('statusLabel', currentLang)}</strong> 
+                <span className={`status-badge status-${finalAssessment.status?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`}>
+                  {finalAssessment.status || t('statusNotAvailable', currentLang)}
+                </span>
+              </p>
               
               {finalAssessment.suitability_for_field && (
                 <p><strong>{t('suitabilityForFieldLabel', currentLang)}</strong> {finalAssessment.suitability_for_field}</p>
@@ -488,22 +493,22 @@ function App() {
                 </div>
               )}
               
-              {finalAssessment.status && !finalAssessment.status.toLowerCase().includes("đạt") && finalAssessment.suggestions_if_not_pass && (
-                <div className="assessment-section">
-                  <h4>{t('suggestionsLabel', currentLang)}</h4>
-                  <p>{finalAssessment.suggestions_if_not_pass}</p>
-                </div>
+              {finalAssessment.suggestions_if_not_pass && (
+                 <div className="assessment-section">
+                    <h4>{t('suggestionsLabel', currentLang)}</h4>
+                    <p>{finalAssessment.suggestions_if_not_pass}</p>
+                 </div>
               )}
 
               {finalAssessment.raw_ai_summary_text && (
-                <details className="raw-ai-details">
-                  <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
-                  <pre className="raw-ai-pre">{finalAssessment.raw_ai_summary_text}</pre>
-                </details>
+                  <details className="raw-ai-details">
+                      <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
+                      <pre className="raw-ai-pre">{finalAssessment.raw_ai_summary_text}</pre>
+                  </details>
               )}
             </div>
           )}
-          <div ref={messagesEndRef} id="messagesEndRef" />
+          <div ref={messagesEndRef} />
         </div>
         
         {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (

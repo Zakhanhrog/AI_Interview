@@ -1107,3 +1107,123 @@ body::after {
         opacity: 0.6;
     }
 }
+/* Thêm vào cuối file App.css hoặc một vị trí hợp lý */
+
+.final-assessment .assessment-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed var(--border-color-light);
+}
+.final-assessment .assessment-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.final-assessment .assessment-section h4 {
+  font-size: 1.15em;
+  color: var(--text-primary-color);
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-weight: 600;
+  border-left: 3px solid var(--input-focus-border-color);
+  padding-left: 10px;
+}
+
+.final-assessment .summary-comment {
+  font-style: italic;
+  color: var(--text-secondary-color);
+  line-height: 1.7;
+}
+
+.final-assessment .status-line {
+  margin-bottom: 20px;
+  font-size: 1.1em;
+}
+
+.final-assessment .status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-left: 8px;
+  color: #fff;
+}
+
+.final-assessment .status-badge.status-đạt, 
+.final-assessment .status-badge.status-pass {
+  background-color: #28a745; /* Green */
+}
+
+.final-assessment .status-badge.status-không-đạt,
+.final-assessment .status-badge.status-fail {
+  background-color: #dc3545; /* Red */
+}
+
+.final-assessment .status-badge.status-cần-xem-xét-thêm,
+.final-assessment .status-badge.status-pending-review {
+  background-color: #ffc107; /* Yellow */
+  color: #333;
+}
+.final-assessment .status-badge.status-unknown {
+  background-color: #6c757d; /* Gray */
+}
+
+
+.final-assessment .assessment-list {
+  padding-left: 0; /* Bỏ padding mặc định của ul */
+}
+
+.final-assessment .assessment-list-item {
+  background-color: #f9fafb;
+  padding: 12px 15px;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 10px;
+  border: 1px solid #eef2f7;
+}
+
+.final-assessment .assessment-list-item .point {
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: var(--text-primary-color);
+}
+
+.final-assessment .assessment-list-item .evidence {
+  font-size: 0.85em;
+  color: var(--text-secondary-color);
+  margin-top: 5px;
+  padding-left: 15px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.final-assessment .assessment-list.simple-list li::before {
+  content: "–"; /* Hoặc không có content gì cả */
+  left: -15px;
+}
+
+.final-assessment .raw-ai-details summary {
+  color: var(--bubble-sent-bg); /* Hoặc một màu accent khác */
+}
+.final-assessment .raw-ai-details summary:hover {
+  color: var(--button-send-bg-hover);
+}
+
+.specialization-choice-area .choice-prompt {
+  text-align: center; 
+  margin: 5px 0 15px; 
+  color: var(--text-secondary-color); 
+  width: 100%;
+  font-weight: 500;
+}
+
+.restart-interview-button { /* Kế thừa từ .chat-header button nhưng có thể override */
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.restart-interview-button:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.send-button { /* Kế thừa từ .input-area button */
+  /* Các style của nút send cũ đã được chuyển vào đây */
+}
