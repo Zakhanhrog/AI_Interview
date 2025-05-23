@@ -32,6 +32,8 @@ const translations = {
     statusNotAvailable: "Chưa có",
     strengthsLabel: "Điểm mạnh:",
     weaknessesLabel: "Điểm yếu/Cần cải thiện:",
+    overallSummaryLabel: "Nhận xét tổng quan:",
+    evidenceLabel: "Minh chứng:",
     suggestionsLabel: "Gợi ý:",
     rawAiSummaryDetails: "Xem chi tiết phản hồi gốc từ AI",
     chooseYourFieldPrompt: "Vui lòng chọn lĩnh vực bạn muốn phỏng vấn chuyên sâu:",
@@ -88,20 +90,7 @@ const translations = {
     errorReceivingInterviewId: "Không nhận được ID phỏng vấn từ server.",
     errorSubmittingCandidateInfo: "Lỗi khi gửi thông tin ứng viên ban đầu. ",
     unknownError: "Đã có lỗi không xác định xảy ra.",
-    waitingForCandidateInfo: "Đang tải biểu mẫu thông tin ứng viên...",
-    fullNamePlaceholder: "Nhập họ tên đầy đủ của bạn",
-    emailPlaceholder: "Nhập địa chỉ email",
-    dobPlaceholder: "YYYY-MM-DD",
-    phoneNumberPlaceholder: "Nhập số điện thoại",
-    majorPlaceholder: "Ví dụ: Kỹ thuật phần mềm",
-    schoolPlaceholder: "Ví dụ: Đại học Bách Khoa",
-    yearsExperiencePlaceholder: "Ví dụ: 2.5",
-    fieldExperienceLabelPlaceholder: "Ví dụ: Phát triển Web",
-    interestedFieldPlaceholder: "Ví dụ: AI, Machine Learning",
-    careerGoalPlaceholder: "Mô tả ngắn gọn mục tiêu của bạn",
-    cvLinkPlaceholder: "https://example.com/cv.pdf",
-    linkedinPlaceholder: "https://linkedin.com/in/yourprofile",
-    portfolioGithubPlaceholder: "https://github.com/yourusername"
+    waitingForCandidateInfo: "Đang tải biểu mẫu thông tin ứng viên..."
   },
   en: {
     chatTitle: "AI Interviewer",
@@ -128,6 +117,8 @@ const translations = {
     statusNotAvailable: "Not yet available",
     strengthsLabel: "Strengths:",
     weaknessesLabel: "Weaknesses/Areas for Improvement:",
+    overallSummaryLabel: "Overall Summary:",
+    evidenceLabel: "Evidence:",
     suggestionsLabel: "Suggestions:",
     rawAiSummaryDetails: "View original AI response details",
     chooseYourFieldPrompt: "Please choose the field for specialized questions:",
@@ -404,28 +395,18 @@ function App() {
 
   return (
     <>
-      {/* Decorative elements for sides of the interview container */}
       <div className="decorative-elements">
-        {/* Left side decorative elements */}
         <div className="decorative-element decorative-element-1"></div>
         <div className="decorative-element decorative-element-2"></div>
         <div className="decorative-element decorative-element-3"></div>
-        
-        {/* Right side decorative elements */}
         <div className="decorative-element decorative-element-4"></div>
         <div className="decorative-element decorative-element-5"></div>
         <div className="decorative-element decorative-element-6"></div>
-        
-        {/* Accent lines */}
         <div className="accent-line accent-line-left"></div>
         <div className="accent-line accent-line-right"></div>
-        
-        {/* Decorative shapes */}
         <div className="decorative-shape decorative-square"></div>
         <div className="decorative-shape decorative-circle"></div>
         <div className="decorative-shape decorative-diamond"></div>
-        
-        {/* Quotation marks for interview theme */}
         <div className="quote-mark quote-open">"</div>
         <div className="quote-mark quote-close">"</div>
       </div>
@@ -434,7 +415,7 @@ function App() {
         <div className="chat-header">
           <h2>{t('chatTitle', currentLang)}</h2>
           {(isInterviewFinished || (interviewLifecycleStatus === 'completed')) && (
-            <button onClick={handleRestartInterview} disabled={isLoading && isInitialLoading}>
+            <button onClick={handleRestartInterview} disabled={isLoading && isInitialLoading} className="restart-interview-button">
               {t('startNewInterviewButton', currentLang)}
             </button>
           )}
@@ -456,33 +437,68 @@ function App() {
           {isInterviewFinished && finalAssessment && (
             <div className="final-assessment">
               <h3>{t('finalAssessmentTitle', currentLang)}</h3>
-              <p><strong>{t('statusLabel', currentLang)}</strong> {finalAssessment.status || t('statusNotAvailable', currentLang)}</p>
-              {finalAssessment.suitability_for_field && <p><strong>{t('suitabilityForFieldLabel', currentLang)}</strong> {finalAssessment.suitability_for_field}</p>}
+              
+              {finalAssessment.overall_summary_comment && (
+                <div className="assessment-section">
+                  <h4>{t('overallSummaryLabel', currentLang)}</h4>
+                  <p className="summary-comment">{finalAssessment.overall_summary_comment}</p>
+                </div>
+              )}
+
+              <p className="status-line"><strong>{t('statusLabel', currentLang)}</strong> <span className={`status-badge status-${finalAssessment.status?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`}>{finalAssessment.status || t('statusNotAvailable', currentLang)}</span></p>
+              
+              {finalAssessment.suitability_for_field && (
+                <p><strong>{t('suitabilityForFieldLabel', currentLang)}</strong> {finalAssessment.suitability_for_field}</p>
+              )}
+
+              {finalAssessment.strengths_analysis && finalAssessment.strengths_analysis.length > 0 && (
+                <div className="assessment-section">
+                  <h4>{t('strengthsLabel', currentLang)}</h4>
+                  <ul className="assessment-list">
+                    {finalAssessment.strengths_analysis.map((item, i) => (
+                      <li key={`strength-${i}`} className="assessment-list-item">
+                        <p className="point">{item.point}</p>
+                        {item.evidence && <p className="evidence"><em>{t('evidenceLabel', currentLang)} {item.evidence}</em></p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {finalAssessment.weaknesses_analysis && finalAssessment.weaknesses_analysis.length > 0 && (
+                <div className="assessment-section">
+                  <h4>{t('weaknessesLabel', currentLang)}</h4>
+                  <ul className="assessment-list">
+                    {finalAssessment.weaknesses_analysis.map((item, i) => (
+                      <li key={`weakness-${i}`} className="assessment-list-item">
+                        <p className="point">{item.point}</p>
+                        {item.evidence && <p className="evidence"><em>{t('evidenceLabel', currentLang)} {item.evidence}</em></p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               {finalAssessment.suggested_positions && finalAssessment.suggested_positions.length > 0 && (
-                <div>
-                  <strong>{t('suggestedPositionsLabel', currentLang)}</strong>
-                  <ul>{finalAssessment.suggested_positions.map((pos, i) => <li key={`pos-${i}`}>{pos}</li>)}</ul>
+                <div className="assessment-section">
+                  <h4>{t('suggestedPositionsLabel', currentLang)}</h4>
+                  <ul className="assessment-list simple-list">
+                    {finalAssessment.suggested_positions.map((pos, i) => <li key={`pos-${i}`}>{pos}</li>)}
+                  </ul>
                 </div>
               )}
-              {finalAssessment.strengths && finalAssessment.strengths.length > 0 && (
-                <div>
-                  <strong>{t('strengthsLabel', currentLang)}</strong>
-                  <ul>{finalAssessment.strengths.map((s, i) => <li key={`s-${i}`}>{s}</li>)}</ul>
-                </div>
-              )}
-              {finalAssessment.weaknesses && finalAssessment.weaknesses.length > 0 && (
-                <div>
-                  <strong>{t('weaknessesLabel', currentLang)}</strong>
-                  <ul>{finalAssessment.weaknesses.map((w, i) => <li key={`w-${i}`}>{w}</li>)}</ul>
-                </div>
-              )}
+              
               {finalAssessment.status && !finalAssessment.status.toLowerCase().includes("đạt") && finalAssessment.suggestions_if_not_pass && (
-                <p><strong>{t('suggestionsLabel', currentLang)}</strong> {finalAssessment.suggestions_if_not_pass}</p>
+                 <div className="assessment-section">
+                    <h4>{t('suggestionsLabel', currentLang)}</h4>
+                    <p>{finalAssessment.suggestions_if_not_pass}</p>
+                 </div>
               )}
+
               {finalAssessment.raw_ai_summary_text && (
-                  <details>
+                  <details className="raw-ai-details">
                       <summary>{t('rawAiSummaryDetails', currentLang)}</summary>
-                      <pre>{finalAssessment.raw_ai_summary_text}</pre>
+                      <pre className="raw-ai-pre">{finalAssessment.raw_ai_summary_text}</pre>
                   </details>
               )}
             </div>
@@ -492,7 +508,7 @@ function App() {
         
         {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (
             <div className="specialization-choice-area input-area">
-              <p style={{textAlign: 'center', margin: '5px 0 10px', color: 'var(--text-primary-color)', width: '100%'}}>{t('chooseYourFieldPrompt', currentLang)}</p> 
+              <p className="choice-prompt">{t('chooseYourFieldPrompt', currentLang)}</p> 
               {fieldsToChoose.map(field => (
                   <button 
                       key={field} 
@@ -525,7 +541,7 @@ function App() {
             <button 
               onClick={handleSubmitAnswer} 
               disabled={isLoading || !userInput.trim()}
-              className={isLoading ? 'button-loading' : ''}
+              className={`send-button ${isLoading ? 'button-loading' : ''}`}
               aria-label={isLoading ? t('sendingButtonLabel', currentLang) : t('sendButtonLabel', currentLang)}
             >
               <span className="button-text">{t('sendButtonLabel', currentLang)}</span>
