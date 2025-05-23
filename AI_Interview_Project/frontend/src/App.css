@@ -566,7 +566,7 @@ body::after {
 }
 
 .final-assessment {
-  margin: 25px;
+  margin: 25px auto;
   padding: 30px;
   background-color: var(--chat-container-bg);
   border-radius: var(--border-radius-lg);
@@ -576,28 +576,36 @@ body::after {
   color: var(--text-primary-color);
   position: relative;
   overflow: hidden;
-  width: calc(100% - 50px); /* Ensure proper width within container */
-  align-self: center; /* Center the assessment box */
-  max-width: 800px; /* Limit maximum width */
+  width: calc(100% - 50px);
+  max-width: 800px;
+  display: block; /* Enforce block display */
 }
 
-/* Add a subtle gradient decoration to the assessment box */
-.final-assessment::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 150px;
-  height: 150px;
-  background: linear-gradient(135deg, rgba(142, 45, 226, 0.05), rgba(74, 0, 224, 0.08));
-  border-radius: 0 0 0 100%;
-  z-index: 0;
-  pointer-events: none;
+/* Fix for final assessment title display issue */
+.messages-area > div:last-child:not(#messagesEndRef) {
+  width: 100%;
+  align-self: center;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
 }
 
-@keyframes finalAssessmentAppear {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+/* When the title appears separate from the assessment container */
+.messages-area h3:only-child {
+  color: var(--input-focus-border-color);
+  background-color: var(--chat-container-bg);
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+  margin: 10px auto;
+  width: 80%;
+  max-width: 500px;
+  text-align: center;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-color-light);
+  position: relative;
 }
 
 .final-assessment h3 {

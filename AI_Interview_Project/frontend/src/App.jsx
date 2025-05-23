@@ -435,7 +435,7 @@ function App() {
             </div>
           ))}
           {isInterviewFinished && finalAssessment && (
-            <div className="final-assessment">
+            <div className="final-assessment" id="finalAssessment">
               <h3>{t('finalAssessmentTitle', currentLang)}</h3>
               
               {finalAssessment.overall_summary_comment && (
@@ -503,7 +503,7 @@ function App() {
               )}
             </div>
           )}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} id="messagesEndRef" />
         </div>
         
         {interviewLifecycleStatus === 'awaiting_specialization' && !isInterviewFinished && fieldsToChoose.length > 0 && (
